@@ -21,7 +21,6 @@ Submodules
 from inv_toolbox import plot, regularization, utils
 from inv_toolbox.__about__ import __author__, __email__, __version__
 
-
 __all__ = [
     "__version__",
     "__email__",

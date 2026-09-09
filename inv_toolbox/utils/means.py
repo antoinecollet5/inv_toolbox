@@ -7,10 +7,9 @@
 from typing import Optional
 
 import numpy as np
-from scipy.stats import gmean, hmean
-
 from inv_toolbox.utils.enum import StrEnum
 from inv_toolbox.utils.types import NDArrayFloat
+from scipy.stats import gmean, hmean
 
 
 def arithmetic_mean(xi: NDArrayFloat, xj: NDArrayFloat) -> NDArrayFloat:

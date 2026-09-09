@@ -14,9 +14,8 @@ from typing import Tuple
 
 import numpy as np
 import scipy as sp
-from numpy.typing import ArrayLike
-
 from inv_toolbox.utils import NDArrayFloat
+from numpy.typing import ArrayLike
 
 
 def _get_curvature(

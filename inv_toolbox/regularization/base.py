@@ -14,12 +14,11 @@ from abc import ABC, abstractmethod
 from typing import List, Literal, Optional, Tuple
 
 import numpy as np
-from scipy.sparse import csc_array, lil_array
-
 from inv_toolbox.forward.models import get_owner_neigh_indices
 from inv_toolbox.utils import NDArrayFloat, NDArrayInt, RectilinearGrid
 from inv_toolbox.utils.finite_differences import finite_gradient
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner
+from scipy.sparse import csc_array, lil_array
 
 
 class RegWeightUpdateStrategy(ABC):

@@ -6,10 +6,10 @@
 from pathlib import Path
 from typing import List, Optional, Union
 
+import covmats
 import matplotlib.pyplot as plt
 import nested_grid_plotter as ngp
 import numpy as np
-import covmats
 from inv_toolbox.utils import NDArrayFloat
 
 
@@ -144,6 +144,4 @@ def plot_2d_grad_res_adj_vs_fd(
     fig_save_path.mkdir(parents=True, exist_ok=True)
 
     for fmt in ["png", "pdf"]:
-        plotter.fig.savefig(
-            str(fig_save_path.joinpath(f"{fname}.{fmt}")), format=fmt
-        )
+        plotter.fig.savefig(str(fig_save_path.joinpath(f"{fname}.{fmt}")), format=fmt)

@@ -9,10 +9,9 @@ from typing import Tuple, Union
 
 import numpy as np
 import scipy as sp
+from inv_toolbox.utils.types import NDArrayFloat
 from scipy.sparse import csc_array, csc_matrix
 from scipy.sparse.linalg import LinearOperator, SuperLU, spilu
-
-from inv_toolbox.utils.types import NDArrayFloat
 
 
 def gradient_ffd(param: NDArrayFloat, dx: float, axis: int = 0) -> NDArrayFloat:

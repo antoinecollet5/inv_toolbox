@@ -5,10 +5,9 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
+from inv_toolbox.utils import NDArrayFloat
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
-
-from inv_toolbox.utils import NDArrayFloat
 
 
 def plot_percentiles(

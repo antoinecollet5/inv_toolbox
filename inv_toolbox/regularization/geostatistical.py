@@ -9,7 +9,6 @@ TODO: add the formulas.
 
 import covmats
 import numpy as np
-
 from inv_toolbox.regularization.base import Regularizator
 from inv_toolbox.utils import NDArrayFloat
 from inv_toolbox.utils.finite_differences import finite_gradient

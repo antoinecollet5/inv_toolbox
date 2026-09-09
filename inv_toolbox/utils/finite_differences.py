@@ -33,7 +33,6 @@ from typing import (
 )
 
 import numpy as np
-
 from inv_toolbox.utils.types import NDArrayFloat
 
 

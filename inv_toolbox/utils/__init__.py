@@ -187,8 +187,6 @@ Sub module providing preconditioners and parametrization tools.
 
 """
 
-from scipy._lib._util import check_random_state  # To handle random_state
-
 from inv_toolbox.utils.callbacks import Callback
 from inv_toolbox.utils.dataclass import default_field
 from inv_toolbox.utils.enum import StrEnum
@@ -250,6 +248,7 @@ from inv_toolbox.utils.types import (
     object_or_object_sequence_to_list,
 )
 from inv_toolbox.utils.wellfield import gen_wells_coordinates
+from scipy._lib._util import check_random_state  # To handle random_state
 
 __all__ = [
     "node_number_to_indices",

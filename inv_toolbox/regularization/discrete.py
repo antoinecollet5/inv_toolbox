@@ -10,7 +10,6 @@ Implement a discrete regularizator.
 from typing import List, Literal
 
 import numpy as np
-
 from inv_toolbox.regularization.base import Regularizator
 from inv_toolbox.utils import NDArrayFloat
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner

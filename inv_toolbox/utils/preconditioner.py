@@ -106,8 +106,6 @@ import covmats
 import numdifftools as nd
 import numpy as np
 import scipy as sp
-from scipy.sparse.linalg import LinearOperator
-
 from inv_toolbox.utils import (
     NDArrayBool,
     NDArrayFloat,
@@ -116,6 +114,7 @@ from inv_toolbox.utils import (
     check_random_state,
     object_or_object_sequence_to_list,
 )
+from scipy.sparse.linalg import LinearOperator
 
 
 class Preconditioner(ABC):
@@ -808,8 +807,7 @@ class LinearTransform(Preconditioner):
         """
         if np.all(np.asarray(slope) == 0):
             raise ValueError(
-                "'slope' must be non-zero, otherwise LinearTransform is not "
-                "invertible!"
+                "'slope' must be non-zero, otherwise LinearTransform is not invertible!"
             )
         self.slope = slope
         self.y_intercept = y_intercept

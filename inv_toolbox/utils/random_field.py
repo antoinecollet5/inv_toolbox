@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Union
 
 import gstools as gs
 import numpy as np
-
 from inv_toolbox.utils.types import NDArrayFloat
 
 # pylint: disable=C0103  # Do not conform to snake_case naming style

@@ -14,9 +14,8 @@ from dataclasses import dataclass
 from typing import Sequence, Union
 
 import scipy as sp
-from typing_extensions import Literal
-
 from inv_toolbox.utils.types import NDArrayFloat, object_or_object_sequence_to_list
+from typing_extensions import Literal
 
 
 @dataclass

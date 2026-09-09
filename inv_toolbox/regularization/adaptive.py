@@ -18,10 +18,9 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import scipy as sp
-from lbfgsb.base import get_bounds
-
 from inv_toolbox.regularization.base import RegWeightUpdateStrategy
 from inv_toolbox.utils import NDArrayFloat
+from lbfgsb.base import get_bounds
 
 
 class AdaptiveRegweight(RegWeightUpdateStrategy, ABC):
@@ -484,7 +483,10 @@ class AdaptiveGradientNormRegweight(AdaptiveRegweight):
         # do not take the update into account. When `_old` is 0.0 (a legal
         # starting value), the relative change is undefined, so the update
         # is not skipped in that case.
-        if _old != 0 and np.abs((self.reg_weight - _old) / _old) < self.convergence_factor:
+        if (
+            _old != 0
+            and np.abs((self.reg_weight - _old) / _old) < self.convergence_factor
+        ):
             self.reg_weight = _old
             return False
 
@@ -679,7 +681,10 @@ class AdaptiveUCRegweight(AdaptiveRegweight):
         # do not take the update into account. When `_old` is 0.0 (a legal
         # starting value), the relative change is undefined, so the update
         # is not skipped in that case.
-        if _old != 0 and np.abs((self.reg_weight - _old) / _old) < self.convergence_factor:
+        if (
+            _old != 0
+            and np.abs((self.reg_weight - _old) / _old) < self.convergence_factor
+        ):
             self.reg_weight = _old
             return False
 

@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-
 from inv_toolbox.regularization.base import (
     Regularizator,
     make_spatial_gradient_matrices,
