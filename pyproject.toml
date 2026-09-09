@@ -81,7 +81,6 @@ tests = [
     "pytest-cookies",
     "coverage",
     "numdifftools",
-    "scikit-sparse",
 ]
 examples = ["matplotlib", "marimo"]
 lint = [
