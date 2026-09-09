@@ -14,11 +14,12 @@ from abc import ABC, abstractmethod
 from typing import List, Literal, Optional, Tuple
 
 import numpy as np
-from inv_toolbox.forward.models import get_owner_neigh_indices
-from inv_toolbox.utils import NDArrayFloat, NDArrayInt, RectilinearGrid
+import quickpaver
+from scipy.sparse import csc_array, lil_array
+
+from inv_toolbox.utils import NDArrayFloat, NDArrayInt
 from inv_toolbox.utils.finite_differences import finite_gradient
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner
-from scipy.sparse import csc_array, lil_array
 
 
 class RegWeightUpdateStrategy(ABC):
@@ -261,7 +262,7 @@ class Regularizator(ABC):
 
 
 def make_spatial_gradient_matrices(
-    grid: RectilinearGrid,
+    grid: quickpaver.RectilinearGrid,
     sub_selection: Optional[NDArrayInt] = None,
     which: Literal["forward", "backward", "both"] = "both",
 ) -> Tuple[csc_array, csc_array]:
@@ -272,7 +273,7 @@ def make_spatial_gradient_matrices(
 
     Parameters
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field
     sub_selection : Optional[NDArrayInt], optional
         Optional sub selection of the field. Non selected elements will be
@@ -303,11 +304,11 @@ def make_spatial_gradient_matrices(
 
     # X contribution
     if grid.nx >= 2:
-        tmp = grid.gamma_ij_x / grid.grid_cell_volume
+        tmp = grid.gamma_ij_x_m2 / grid.grid_cell_volume_m3
 
         if which in ["forward", "both"]:
             # Forward scheme only: see PhD manuscript, chapter 7 for the explanaition.
-            idc_owner, idc_neigh = get_owner_neigh_indices(
+            idc_owner, idc_neigh = quickpaver.get_owner_neigh_indices(
                 grid,
                 (slice(0, grid.nx - 1), slice(None), slice(None)),
                 (slice(1, grid.nx), slice(None), slice(None)),
@@ -320,7 +321,7 @@ def make_spatial_gradient_matrices(
 
         if which in ["backward", "both"]:
             # Forward scheme only: see PhD manuscript, chapter 7 for the explanaition.
-            idc_owner, idc_neigh = get_owner_neigh_indices(
+            idc_owner, idc_neigh = quickpaver.get_owner_neigh_indices(
                 grid,
                 (slice(1, grid.nx), slice(None), slice(None)),
                 (slice(0, grid.nx - 1), slice(None), slice(None)),
@@ -333,11 +334,11 @@ def make_spatial_gradient_matrices(
 
     # Y contribution
     if grid.ny >= 2:
-        tmp = grid.gamma_ij_y / grid.grid_cell_volume
+        tmp = grid.gamma_ij_y_m2 / grid.grid_cell_volume_m3
 
         if which in ["forward", "both"]:
             # Forward scheme only: see PhD manuscript, chapter 7 for the explanaition.
-            idc_owner, idc_neigh = get_owner_neigh_indices(
+            idc_owner, idc_neigh = quickpaver.get_owner_neigh_indices(
                 grid,
                 (slice(None), slice(0, grid.ny - 1), slice(None)),
                 (slice(None), slice(1, grid.ny), slice(None)),
@@ -350,7 +351,7 @@ def make_spatial_gradient_matrices(
 
         if which in ["backward", "both"]:
             # Forward scheme only: see PhD manuscript, chapter 7 for the explanaition.
-            idc_owner, idc_neigh = get_owner_neigh_indices(
+            idc_owner, idc_neigh = quickpaver.get_owner_neigh_indices(
                 grid,
                 (slice(None), slice(1, grid.ny), slice(None)),
                 (slice(None), slice(0, grid.ny - 1), slice(None)),
@@ -364,14 +365,14 @@ def make_spatial_gradient_matrices(
 
 
 def make_spatial_permutation_matrices(
-    grid: RectilinearGrid, sub_selection: Optional[NDArrayInt] = None
+    grid: quickpaver.RectilinearGrid, sub_selection: Optional[NDArrayInt] = None
 ) -> Tuple[csc_array, csc_array]:
     """
     Make matrices to compute the spatial permutations along x and y axes of a field.
 
     Parameters
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field
     sub_selection : Optional[NDArrayInt], optional
         Optional sub selection of the field. Non selected elements will be
@@ -397,7 +398,7 @@ def make_spatial_permutation_matrices(
     # X contribution
     if grid.nx >= 2:
         # Forward scheme:
-        idc_owner, idc_neigh = get_owner_neigh_indices(
+        idc_owner, idc_neigh = quickpaver.get_owner_neigh_indices(
             grid,
             (slice(0, grid.nx - 1), slice(None), slice(None)),
             (slice(1, grid.nx), slice(None), slice(None)),
@@ -410,7 +411,7 @@ def make_spatial_permutation_matrices(
     # Y contribution
     if grid.ny >= 2:
         # Forward scheme:
-        idc_owner, idc_neigh = get_owner_neigh_indices(
+        idc_owner, idc_neigh = quickpaver.get_owner_neigh_indices(
             grid,
             (slice(None), slice(0, grid.ny - 1), slice(None)),
             (slice(None), slice(1, grid.ny), slice(None)),

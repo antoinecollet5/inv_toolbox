@@ -9,6 +9,7 @@ TODO: add the formulas.
 
 import covmats
 import numpy as np
+
 from inv_toolbox.regularization.base import Regularizator
 from inv_toolbox.utils import NDArrayFloat
 from inv_toolbox.utils.finite_differences import finite_gradient
@@ -133,7 +134,7 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
         is made.
     """
 
-    def eval_loss(self, ens: NDArrayFloat) -> float:
+    def eval_loss(self, values: NDArrayFloat) -> float:
         r"""
         Compute the ensemble-averaged geostatistical regularization loss.
 
@@ -147,7 +148,7 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
 
         Parameters
         ----------
-        ens : NDArrayFloat
+        values : NDArrayFloat
             Ensemble of shape (N_s, Ne). N_s being the number of optimized
             values, Ne, the number of members in the ensemble.
 
@@ -156,27 +157,29 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
         float
             The regularization loss value, averaged over the ensemble.
         """
-        if not ens.ndim == 2:
+        if not values.ndim == 2:
             raise ValueError(
                 "The 'EnsembleRegularizator.eval_loss' method expects a 2D vector!"
             )
 
-        _values = ens
+        _values = values
         residuals: NDArrayFloat = _values - self.prior.get_values(_values)
         # residuals = - self.prior.get_values(_values)
 
         # And this is strictly equivalent (element wise multiplication)
         return (
-            0.5 * float(np.sum(residuals * self.cov_m.solve(residuals))) / ens.shape[1]
+            0.5
+            * float(np.sum(residuals * self.cov_m.solve(residuals)))
+            / values.shape[1]
         )
 
-    def eval_loss_gradient_analytical(self, ens: NDArrayFloat) -> NDArrayFloat:
+    def eval_loss_gradient_analytical(self, values: NDArrayFloat) -> NDArrayFloat:
         """
         Compute the gradient of the regularization loss function analytically.
 
         Parameters
         ----------
-        ens : NDArrayFloat
+        values : NDArrayFloat
             Ensemble of shape (N_s, Ne). N_s being the number of optimized values,
             Ne, the number of members in the ensemble.
 
@@ -185,12 +188,12 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
         NDArrayFloat
             The regularization gradient (2d).
         """
-        if not ens.ndim == 2:
+        if not values.ndim == 2:
             raise ValueError(
                 "The 'EnsembleRegularizator.eval_loss_gradient_analytical' "
                 "method expects a 2D vector!"
             )
-        _values = ens
+        _values = values
         residuals: NDArrayFloat = _values - self.prior.get_values(_values)
         # residuals = _values * 0.0 - self.prior.get_values(_values)
 
@@ -198,7 +201,12 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
         _right_part = self.cov_m.solve(residuals)
 
         # We should have the same shape
-        assert _right_part.shape == ens.shape
+        if _right_part.shape != values.shape:
+            raise ValueError(
+                "The covariance solve did not return an array with the same "
+                f"shape as the input ensemble: got {_right_part.shape}, "
+                f"expected {values.shape}."
+            )
 
         # TODO: here we considered than the derivative of the covariance matrix w.r.t.
         # the parameters is null, but that is not necessary the case all the time.
@@ -215,11 +223,11 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
                 axis=1,
                 keepdims=True,
             )
-        ) / ens.shape[1]
+        ) / values.shape[1]
 
     def eval_loss_gradient(
         self,
-        ens: NDArrayFloat,
+        values: NDArrayFloat,
         is_finite_differences: bool = False,
         max_workers: int = 1,
     ) -> NDArrayFloat:
@@ -229,7 +237,8 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
         Parameters
         ----------
         values : NDArrayFloat
-            The parameter for which the regularization is computed.
+            Ensemble of shape (N_s, Ne). N_s being the number of optimized
+            values, Ne, the number of members in the ensemble.
         is_finite_differences: bool
             If true, a numerical approximation by 2nd order finite difference is
             returned. Cost twice the `values` dimensions in terms of loss function
@@ -244,18 +253,18 @@ class EnsembleRegularizator(GeostatisticalRegularizator):
         NDArrayFloat
             The regularization gradient (not preconditioned).
         """
-        if not ens.ndim == 2:
+        if not values.ndim == 2:
             raise ValueError(
                 "The 'EnsembleRegularizator.eval_loss_gradient_analytical' "
                 "method expects a 2D vector!"
             )
 
         if is_finite_differences:
-            return finite_gradient(ens, self.eval_loss, max_workers=max_workers)
+            return finite_gradient(values, self.eval_loss, max_workers=max_workers)
         else:
             return self.preconditioner.dtransform_vec(
-                ens,
-                self.eval_loss_gradient_analytical(self.preconditioner(ens)),
+                values,
+                self.eval_loss_gradient_analytical(self.preconditioner(values)),
             )
 
 

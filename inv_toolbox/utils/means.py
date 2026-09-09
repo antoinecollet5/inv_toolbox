@@ -7,9 +7,10 @@
 from typing import Optional
 
 import numpy as np
+from scipy.stats import gmean, hmean
+
 from inv_toolbox.utils.enum import StrEnum
 from inv_toolbox.utils.types import NDArrayFloat
-from scipy.stats import gmean, hmean
 
 
 def arithmetic_mean(xi: NDArrayFloat, xj: NDArrayFloat) -> NDArrayFloat:
@@ -97,6 +98,39 @@ class MeanType(StrEnum):
     GEOMETRIC = "geometric"
 
 
+def _reduce_1d(
+    values_1d: NDArrayFloat, mean_type: MeanType, weights: Optional[NDArrayFloat]
+) -> float:
+    """
+    Reduce a 1D array of values to a scalar mean, dispatching on `mean_type`.
+
+    Small helper isolating the dispatch used by :func:`get_mean_values_for_last_axis`
+    so that :func:`numpy.apply_along_axis` is given a single, uniformly-typed
+    callable (``np.average``, `gmean` and `hmean` do not share an identical
+    signature, which a dict-based dispatch would otherwise expose to
+    `apply_along_axis` as an unmatchable union of callables).
+
+    Parameters
+    ----------
+    values_1d : NDArrayFloat
+        1D array of values to average.
+    mean_type : MeanType
+        Type of mean to compute.
+    weights : Optional[NDArrayFloat]
+        Weights to apply.
+
+    Returns
+    -------
+    float
+        The mean of `values_1d`.
+    """
+    if mean_type == MeanType.ARITHMETIC:
+        return float(np.average(values_1d, weights=weights))
+    if mean_type == MeanType.GEOMETRIC:
+        return float(gmean(values_1d, weights=weights))
+    return float(hmean(values_1d, weights=weights))
+
+
 def get_mean_values_for_last_axis(
     arr: NDArrayFloat, mean_type: MeanType, weights: Optional[NDArrayFloat] = None
 ) -> NDArrayFloat:
@@ -125,20 +159,14 @@ def get_mean_values_for_last_axis(
     # or make 2D
     else:
         _arr = _arr.reshape(-1, _arr.shape[-1])
-    if weights is not None:
-        if _arr.shape[0] != weights.size:
-            raise ValueError(
-                "The number of weights must match the number of grid cells."
-            )
+    if weights is not None and _arr.shape[0] != weights.size:
+        raise ValueError("The number of weights must match the number of grid cells.")
 
     return np.apply_along_axis(
-        {
-            MeanType.ARITHMETIC: np.average,
-            MeanType.GEOMETRIC: gmean,
-            MeanType.HARMONIC: hmean,
-        }[mean_type],
+        _reduce_1d,
         axis=0,
         arr=_arr,
+        mean_type=mean_type,
         weights=weights,
     )
 
@@ -222,6 +250,38 @@ def gmean_gradient(
     return weights / (values * np.sum(weights)) * gmean(values, weights=weights)
 
 
+def _reduce_gradient_1d(
+    values_1d: NDArrayFloat, mean_type: MeanType, weights: Optional[NDArrayFloat] = None
+) -> NDArrayFloat:
+    """
+    Reduce a 1D array of values to its mean gradient, dispatching on `mean_type`.
+
+    Small helper isolating the dispatch used by
+    :func:`get_mean_values_gradient_for_last_axis`, for the same reason as
+    :func:`_reduce_1d`.
+
+    Parameters
+    ----------
+    values_1d : NDArrayFloat
+        1D array of values the mean gradient is computed from.
+    mean_type : MeanType
+        Type of mean to differentiate.
+    weights : Optional[NDArrayFloat]
+        Weights associated with `values_1d`.
+
+    Returns
+    -------
+    NDArrayFloat
+        The gradient of the mean of `values_1d`, with the same shape as
+        `values_1d`.
+    """
+    if mean_type == MeanType.ARITHMETIC:
+        return amean_gradient(values_1d, weights=weights)
+    if mean_type == MeanType.GEOMETRIC:
+        return gmean_gradient(values_1d, weights=weights)
+    return hmean_gradient(values_1d, weights=weights)
+
+
 def get_mean_values_gradient_for_last_axis(
     arr: NDArrayFloat, mean_type: MeanType, weights: Optional[NDArrayFloat] = None
 ) -> NDArrayFloat:
@@ -249,19 +309,13 @@ def get_mean_values_gradient_for_last_axis(
     # or make 2D
     else:
         _arr = arr.reshape(-1, arr.shape[-1])
-    if weights is not None:
-        if _arr.shape[0] != weights.size:
-            raise ValueError(
-                "The number of weights must match the number of grid cells."
-            )
+    if weights is not None and _arr.shape[0] != weights.size:
+        raise ValueError("The number of weights must match the number of grid cells.")
 
     return np.apply_along_axis(
-        {
-            MeanType.ARITHMETIC: amean_gradient,
-            MeanType.GEOMETRIC: gmean_gradient,
-            MeanType.HARMONIC: hmean_gradient,
-        }[mean_type],
+        _reduce_gradient_1d,
         axis=0,
         arr=_arr,
+        mean_type=mean_type,
         weights=weights,
     ).reshape(arr.shape)

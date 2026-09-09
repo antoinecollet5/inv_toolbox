@@ -11,11 +11,11 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Sequence, Union
+from typing import Literal, Sequence, Union
 
 import scipy as sp
+
 from inv_toolbox.utils.types import NDArrayFloat, object_or_object_sequence_to_list
-from typing_extensions import Literal
 
 
 @dataclass

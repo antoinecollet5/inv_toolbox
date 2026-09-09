@@ -5,11 +5,12 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
+from scipy.stats._stats_py import _validate_distribution
+
 from inv_toolbox.regularization.base import Regularizator
 from inv_toolbox.utils import NDArrayFloat, NDArrayInt
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner
-from numpy.typing import ArrayLike, NDArray
-from scipy.stats._stats_py import _validate_distribution
 
 
 def ffill(arr: NDArray) -> NDArray:
@@ -79,7 +80,7 @@ def make_dist_values_unique(
         idx[:] = np.nan
         idx[_indices] = np.arange(np.size(vals))
         idx = np.asarray(ffill(idx)[np.argsort(sorter)], dtype=np.int64)
-        _weights = np.bincount(idx, weights)
+        _weights = np.bincount(idx, weights)  # ty: ignore[no-matching-overload]
     return vals, _weights, _indices, sorter
 
 

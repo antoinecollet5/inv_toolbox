@@ -5,9 +5,10 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from inv_toolbox.utils import NDArrayFloat
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
+
+from inv_toolbox.utils import NDArrayFloat
 
 
 def plot_percentiles(
@@ -47,7 +48,7 @@ def plot_percentiles(
 
     n = 19  # 9 bins + the P50 that we won't use
     percentiles = np.linspace(start=5.0, stop=95.0, num=n)
-    s_dist = np.percentile(data, q=percentiles, method=method, axis=1)
+    s_dist = np.percentile(data, q=percentiles, method=method, axis=1)  # ty:ignore[no-matching-overload]
 
     if x is None:
         _x: NDArrayFloat = np.arange(data.shape[0])

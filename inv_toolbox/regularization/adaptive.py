@@ -18,9 +18,10 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import scipy as sp
-from inv_toolbox.regularization.base import RegWeightUpdateStrategy
-from inv_toolbox.utils import NDArrayFloat
 from lbfgsb.base import get_bounds
+
+from inv_toolbox.regularization.base import RegWeightUpdateStrategy
+from inv_toolbox.utils import NDArrayFloat, NDArrayInt
 
 
 class AdaptiveRegweight(RegWeightUpdateStrategy, ABC):
@@ -761,7 +762,7 @@ def make_convex_around_min_uc(
         reg_params (by increasing order) and associated convex sequence of uc values.
     """
     # find the index of the minimum
-    id_min_uc: int = np.argmin(uc_values)
+    id_min_uc: int = int(np.argmin(uc_values))
     # add the index of the minimum as a value to keep
     kept_indices: List[int] = [id_min_uc]
 
@@ -780,23 +781,23 @@ def make_convex_around_min_uc(
     return reg_params[kept_indices], uc_values[kept_indices]
 
 
-def get_minima_indices(input: NDArrayFloat) -> NDArrayFloat:
+def get_minima_indices(values: NDArrayFloat) -> NDArrayInt:
     """
     Return the indices of all local minima found.
 
     Parameters
     ----------
-    input : NDArrayFloat
+    values : NDArrayFloat
         Sequence of values.
 
     Returns
     -------
-    NDArrayFloat
+    NDArrayInt
         Indices of all local minima found.
     """
-    minima = np.ones_like(input, dtype=np.bool_)
-    minima[:-1] = input[:-1] <= input[1:]
-    minima[1:] = np.logical_and(minima[1:], input[:-1] >= input[1:])
+    minima = np.ones_like(values, dtype=np.bool_)
+    minima[:-1] = values[:-1] <= values[1:]
+    minima[1:] = np.logical_and(minima[1:], values[:-1] >= values[1:])
     return np.argwhere(minima).ravel()
 
 

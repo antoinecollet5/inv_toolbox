@@ -10,6 +10,7 @@ Implement a discrete regularizator.
 from typing import List, Literal
 
 import numpy as np
+
 from inv_toolbox.regularization.base import Regularizator
 from inv_toolbox.utils import NDArrayFloat
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner
@@ -230,7 +231,7 @@ class DiscreteRegularizator(Regularizator):
             raise ValueError('penalty should be among ["least-squares", "gaussian"]')
         self._penalty = value
 
-    def _eval_loss(self, param: NDArrayFloat) -> float:
+    def _eval_loss(self, values: NDArrayFloat) -> float:
         r"""
         Compute the discrete regularization loss function.
 
@@ -252,7 +253,7 @@ class DiscreteRegularizator(Regularizator):
 
         Parameters
         ----------
-        param : NDArrayFloat
+        values : NDArrayFloat
             The parameter for which the regularization is computed.
 
         Returns
@@ -261,16 +262,16 @@ class DiscreteRegularizator(Regularizator):
             The regularization loss value.
         """
         if self.penalty == "least-squares":
-            return float(np.sum(min_squared_distance(param, self.modes)))
-        return float(np.sum(gaussian_distance_from_modes(param, self.modes)))
+            return float(np.sum(min_squared_distance(values, self.modes)))
+        return float(np.sum(gaussian_distance_from_modes(values, self.modes)))
 
-    def _eval_loss_gradient_analytical(self, param: NDArrayFloat) -> NDArrayFloat:
+    def _eval_loss_gradient_analytical(self, values: NDArrayFloat) -> NDArrayFloat:
         """
         Compute the gradient of the regularization loss function analytically.
 
         Parameters
         ----------
-        param : NDArrayFloat
+        values : NDArrayFloat
             The parameter for which the regularization is computed.
 
         Returns
@@ -279,6 +280,6 @@ class DiscreteRegularizator(Regularizator):
             The regularization gradient.
         """
         if self.penalty == "least-squares":
-            return dmin_squared_distance(param, self.modes)
+            return dmin_squared_distance(values, self.modes)
         # Gaussian
-        return dgaussian_distance_from_modes(param, self.modes)  # Gaussian
+        return dgaussian_distance_from_modes(values, self.modes)  # Gaussian

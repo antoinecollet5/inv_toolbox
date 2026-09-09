@@ -13,12 +13,14 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
+import quickpaver
+
 from inv_toolbox.regularization.base import (
     Regularizator,
     make_spatial_gradient_matrices,
     make_spatial_permutation_matrices,
 )
-from inv_toolbox.utils import NDArrayFloat, NDArrayInt, RectilinearGrid, gradient_ffd
+from inv_toolbox.utils import NDArrayFloat, NDArrayInt, gradient_ffd
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner
 
 
@@ -29,7 +31,7 @@ class TVRegularizator(Regularizator):
 
     Attributes
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field.
     eps: float
         Small factor added in the square root to deal with the singularity at
@@ -48,7 +50,7 @@ class TVRegularizator(Regularizator):
 
     """
 
-    grid: RectilinearGrid
+    grid: quickpaver.RectilinearGrid
     eps: float = 1e-20
     preconditioner: Preconditioner = NoTransform()
 
@@ -144,7 +146,7 @@ class TVMatRegularizator(Regularizator):
 
     Attributes
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field
     sub_selection : Optional[NDArrayInt], optional
         Optional sub selection of the field. Non selected elements will be
@@ -160,7 +162,7 @@ class TVMatRegularizator(Regularizator):
 
     """
 
-    grid: RectilinearGrid
+    grid: quickpaver.RectilinearGrid
     sub_selection: Optional[NDArrayInt] = None
     eps: float = 1e-20
     preconditioner: Preconditioner = NoTransform()
@@ -262,7 +264,7 @@ class TVFVMRegularizator(Regularizator):
 
     Attributes
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field.
     sub_selection : Optional[NDArrayInt], optional
         Optional sub selection of the field. Non selected elements will be
@@ -284,7 +286,7 @@ class TVFVMRegularizator(Regularizator):
     ignored.
     """
 
-    grid: RectilinearGrid
+    grid: quickpaver.RectilinearGrid
     sub_selection: Optional[NDArrayInt] = None
     eps: float = 1e-20
     preconditioner: Preconditioner = NoTransform()
@@ -318,7 +320,7 @@ class TVFVMRegularizator(Regularizator):
         # Add epsilon to prevent undetermination when deriving
         arr = np.zeros_like(v)
         if self.grid.nx > 2:
-            tmp: float = self.grid.gamma_ij_x / self.grid.grid_cell_volume
+            tmp: float = self.grid.gamma_ij_x_m2 / self.grid.grid_cell_volume_m3
             arr += tmp**2 * (
                 (self.mat_perm_x @ (self.mat_perm_x.T @ v) - self.mat_perm_x @ v) ** 2
                 + (self.mat_perm_x.T @ (self.mat_perm_x @ v) - self.mat_perm_x.T @ v)
@@ -326,7 +328,7 @@ class TVFVMRegularizator(Regularizator):
             )
 
         if self.grid.ny > 2:
-            tmp = self.grid.gamma_ij_y / self.grid.grid_cell_volume
+            tmp = self.grid.gamma_ij_y_m2 / self.grid.grid_cell_volume_m3
             arr += tmp**2 * (
                 (self.mat_perm_y @ (self.mat_perm_y.T @ v) - self.mat_perm_y @ v) ** 2
                 + (self.mat_perm_y.T @ (self.mat_perm_y @ v) - self.mat_perm_y.T @ v)
@@ -358,13 +360,13 @@ class TVFVMRegularizator(Regularizator):
         """
         return float(np.sum(self._get_grid_cell_l1(values.ravel("F"))))
 
-    def _eval_loss_gradient_analytical(self, v: NDArrayFloat) -> NDArrayFloat:
+    def _eval_loss_gradient_analytical(self, values: NDArrayFloat) -> NDArrayFloat:
         r"""
         Compute the gradient of the regularization loss function analytically.
 
         Parameters
         ----------
-        v : NDArrayFloat
+        values : NDArrayFloat
             The parameter for which the regularization is computed.
 
         Returns
@@ -372,11 +374,12 @@ class TVFVMRegularizator(Regularizator):
         NDArrayFloat
             The regularization gradient.
         """
+        v = values
         l1 = self._get_grid_cell_l1(v.ravel("F"))
 
         grad = np.zeros(v.size)
         if self.grid.nx > 2:
-            tmp: float = (self.grid.gamma_ij_x / self.grid.grid_cell_volume) ** 2
+            tmp: float = (self.grid.gamma_ij_x_m2 / self.grid.grid_cell_volume_m3) ** 2
             # term 1
             grad += (
                 tmp
@@ -403,7 +406,7 @@ class TVFVMRegularizator(Regularizator):
             grad[mask] += tmp * xbwd[mask] / denbwd[mask]
 
         if self.grid.ny > 2:
-            tmp = (self.grid.gamma_ij_y / self.grid.grid_cell_volume) ** 2
+            tmp = (self.grid.gamma_ij_y_m2 / self.grid.grid_cell_volume_m3) ** 2
             # term 1
             grad += (
                 tmp

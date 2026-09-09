@@ -14,8 +14,8 @@ from typing import Tuple
 
 import numpy as np
 import scipy as sp
+
 from inv_toolbox.utils import NDArrayFloat
-from numpy.typing import ArrayLike
 
 
 def _get_curvature(
@@ -73,16 +73,16 @@ def _get_curvature(
 
 
 def _interpolate_reg_weights(
-    reg_weights: ArrayLike, loss_ls_list: ArrayLike, interp_loss_ls: NDArrayFloat
+    reg_weights: NDArrayFloat, loss_ls_list: NDArrayFloat, interp_loss_ls: NDArrayFloat
 ) -> NDArrayFloat:
     """
     Interpolate the regularization weights at the given interpolated LS losses.
 
     Parameters
     ----------
-    reg_weights : ArrayLike
+    reg_weights : NDArrayFloat
         Regularization weights, in increasing order, matching `loss_ls_list`.
-    loss_ls_list : ArrayLike
+    loss_ls_list : NDArrayFloat
         Least-squares (data-fit) loss values associated with `reg_weights`.
     interp_loss_ls : NDArrayFloat
         Interpolated least-squares loss values at which the corresponding
@@ -110,9 +110,9 @@ def _interpolate_reg_weights(
 
 
 def _interpolate_lcurve(
-    reg_weights: ArrayLike,
-    loss_ls_list: ArrayLike,
-    loss_reg_list: ArrayLike,
+    reg_weights: NDArrayFloat,
+    loss_ls_list: NDArrayFloat,
+    loss_reg_list: NDArrayFloat,
     is_logspace: bool = False,
     target_n: int = 500,
 ) -> Tuple[NDArrayFloat, NDArrayFloat, NDArrayFloat]:
@@ -126,11 +126,11 @@ def _interpolate_lcurve(
 
     Parameters
     ----------
-    reg_weights : ArrayLike
+    reg_weights : NDArrayFloat
         List of regularization weights, in increasing order.
-    loss_ls_list : ArrayLike
+    loss_ls_list : NDArrayFloat
         List of least-squares (data-fit) loss values.
-    loss_reg_list : ArrayLike
+    loss_reg_list : NDArrayFloat
         List of regularization loss values.
     is_logspace : bool, optional
         Whether to interpolate `interp_loss_ls` on a logarithmic scale, by
@@ -161,7 +161,7 @@ def _interpolate_lcurve(
         )
 
     # sort by increasing loss_ls
-    x_sorted, y_sorted, z_sorted = np.array(
+    x_sorted, y_sorted, _z_sorted = np.array(
         sorted(zip(loss_ls_list, loss_reg_list, reg_weights))
     ).T
 
@@ -170,7 +170,7 @@ def _interpolate_lcurve(
         return np.max(np.log(y_sorted)) + a * (x - np.min(np.log(x_sorted))) ** b
 
     # fit parameters
-    popt, err = sp.optimize.curve_fit(
+    popt, _err = sp.optimize.curve_fit(
         lcurve,
         np.log(x_sorted),
         np.log(y_sorted),
@@ -197,9 +197,9 @@ def _interpolate_lcurve(
 
 
 def get_l_curvature(
-    reg_weights: ArrayLike,
-    loss_ls_list: ArrayLike,
-    loss_reg_list: ArrayLike,
+    reg_weights: NDArrayFloat,
+    loss_ls_list: NDArrayFloat,
+    loss_reg_list: NDArrayFloat,
     is_logspace: bool = False,
     nb_interp_points: int = 500,
 ) -> Tuple[NDArrayFloat, NDArrayFloat, NDArrayFloat, NDArrayFloat, int]:
@@ -208,11 +208,11 @@ def get_l_curvature(
 
     Parameters
     ----------
-    reg_weights : ArrayLike
+    reg_weights : NDArrayFloat
         List of regularization weights in increasing order.
-    loss_ls_list : ArrayLike
+    loss_ls_list : NDArrayFloat
         List of least square objective function (or equivalent data fit measure).
-    loss_reg_list : ArrayLike
+    loss_reg_list : NDArrayFloat
         List of regularization objective function.
     is_logspace : bool, optional
         Whether to use logspace for the fit, it depends on data scaling.

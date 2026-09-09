@@ -33,6 +33,7 @@ from typing import (
 )
 
 import numpy as np
+
 from inv_toolbox.utils.types import NDArrayFloat
 
 
@@ -78,11 +79,11 @@ def is_jacobian_correct(
         Forward model.
     jac : Callable
         Jacobian model.
-    fm_args: Tuple[Any]
+    fm_args: Tuple[Any, ...]
         Positional arguments for the forward model.
     fm_kwargs : Dict[Any, Any]
         Keyword arguments for the forward model.
-    grad_args: Tuple[Any]
+    grad_args: Tuple[Any, ...]
         Positional arguments for the gradient model.
     grad_kwargs : Dict[Any, Any]
         Keyword arguments for the gradient model.
@@ -108,7 +109,7 @@ def is_jacobian_correct(
 
     """
     if jac_args is None:
-        _jac_args: Tuple[Any] = ()
+        _jac_args: Tuple[Any, ...] = ()
     else:
         _jac_args = jac_args
     if jac_kwargs is None:
@@ -146,11 +147,11 @@ def is_gradient_correct(
         Forward model.
     grad : Callable
         Gradient model.
-    fm_args: Tuple[Any]
+    fm_args: Tuple[Any, ...]
         Positional arguments for the forward model.
     fm_kwargs : Dict[Any, Any]
         Keyword arguments for the forward model.
-    grad_args: Tuple[Any]
+    grad_args: Tuple[Any, ...]
         Positional arguments for the gradient model.
     grad_kwargs : Dict[Any, Any]
         Keyword arguments for the gradient model.
@@ -363,7 +364,7 @@ def finite_jacobian(
         The input parameters array.
     fm : Callable
         Forward model.
-    fm_args: Tuple[Any]
+    fm_args: Tuple[Any, ...]
         Positional arguments for the forward model.
     fm_kwargs : Dict[Any, Any]
         Keyword arguments for the forward model.
@@ -514,7 +515,7 @@ def finite_gradient(
         The input parameters array.
     fm : Callable
         Forward model.
-    fm_args: Tuple[Any]
+    fm_args: Tuple[Any, ...]
         Positional arguments for the forward model.
     fm_kwargs : Dict[Any, Any]
         Keyword arguments for the forward model.

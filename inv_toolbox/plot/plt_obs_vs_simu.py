@@ -4,8 +4,9 @@
 from typing import Optional
 
 import numpy as np
-from inv_toolbox.utils import NDArrayFloat
 from matplotlib.axes import Axes
+
+from inv_toolbox.utils import NDArrayFloat
 
 
 def plot_observed_vs_simulated(

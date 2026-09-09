@@ -100,21 +100,22 @@ import warnings
 from abc import ABC, abstractmethod
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
-from typing import Callable, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Callable, Generator, Optional, Sequence, Tuple, Union
 
 import covmats
 import numdifftools as nd
 import numpy as np
+import quickpaver
 import scipy as sp
+from scipy.sparse.linalg import LinearOperator
+
 from inv_toolbox.utils import (
     NDArrayBool,
     NDArrayFloat,
     NDArrayInt,
-    RectilinearGrid,
     check_random_state,
     object_or_object_sequence_to_list,
 )
-from scipy.sparse.linalg import LinearOperator
 
 
 class Preconditioner(ABC):
@@ -545,9 +546,10 @@ class Preconditioner(ABC):
             np.testing.assert_allclose(
                 self.dtransform_vec(test_data, gradient),
                 # Finite difference differentiation
-                nd.Jacobian(self.transform, step=eps)(test_data).T @ gradient,
+                np.asarray(nd.Jacobian(self.transform, step=eps)(test_data)).T
+                @ gradient,
                 rtol=rtol,
-            )  # type: ignore
+            )
 
         # 3) check by finite difference if the back-conditioner derivative is correct
         if 3 not in _skip_checks:
@@ -555,7 +557,9 @@ class Preconditioner(ABC):
             np.testing.assert_allclose(
                 self.dbacktransform_vec(self.transform(test_data), gradient),
                 # Finite difference differentiation
-                nd.Jacobian(self.backtransform, step=eps)(self.transform(test_data)).T
+                np.asarray(
+                    nd.Jacobian(self.backtransform, step=eps)(self.transform(test_data))
+                ).T
                 @ gradient,
                 rtol=rtol,
             )
@@ -620,7 +624,7 @@ class ChainedTransforms(Preconditioner):
             Sequence of preconditioners to apply. The preconditioners are applied in
             the order of the given list.
         """
-        self.pcds: List[Preconditioner] = object_or_object_sequence_to_list(pcds)
+        self.pcds: list[Preconditioner] = object_or_object_sequence_to_list(pcds)
 
     def _transform(self, s_raw: NDArrayFloat) -> NDArrayFloat:
         """
@@ -1881,7 +1885,7 @@ def get_gd_weights(theta: NDArrayFloat) -> NDArrayFloat:
     if np.size(theta) < 1:
         raise ValueError("The theta vector is empty!")
     # initialize the vector of weights
-    weights: NDArrayFloat = np.zeros((theta.size + 1))
+    weights: NDArrayFloat = np.zeros(theta.size + 1)
     # first weight
     weights[0] = np.prod(np.cos(theta))
     # i = 1... Ne - 2
@@ -2069,7 +2073,7 @@ def get_theta_init(target_weights: NDArrayFloat) -> NDArrayFloat:
         Vector of param theta with size (ne - 1).
     """
     ne = np.size(target_weights)
-    params = np.zeros((ne - 1))
+    params = np.zeros(ne - 1)
     params[-1] = np.arcsin(target_weights[-1])
 
     # i = 1... Ne - 2
@@ -2538,7 +2542,11 @@ class GDPCS(GDPNCS):
         def _a_matvec(x: NDArrayFloat) -> NDArrayFloat:
             return H.matvec(self.cov.matvec(H.rmatvec(x))) + r_matvec(x)
 
-        a_linop = LinearOperator((n_obs, n_obs), matvec=_a_matvec, dtype=float)
+        # scipy's documented `LinearOperator(shape, matvec=..., dtype=...)` factory
+        # call (LinearOperator.__new__ redirects to _CustomLinearOperator); ty
+        # resolves it against the base class's own __init__(self, dtype, shape)
+        # instead, so this is a stub-resolution false positive, not a real bug.
+        a_linop = LinearOperator((n_obs, n_obs), matvec=_a_matvec, dtype=float)  # type: ignore
         sol, info = sp.sparse.linalg.cg(a_linop, rhs, rtol=1e-10)
         if info != 0:
             raise RuntimeError(
@@ -2660,7 +2668,9 @@ class GDPCS(GDPNCS):
 class SubSelector(Preconditioner):
     """Apply a selection on the input field, keeping the rest of it fixed."""
 
-    def __init__(self, node_numbers: NDArrayInt, grid: RectilinearGrid) -> None:
+    def __init__(
+        self, node_numbers: NDArrayInt, grid: quickpaver.RectilinearGrid
+    ) -> None:
         """
         Initialize the instance.
 
@@ -2668,7 +2678,7 @@ class SubSelector(Preconditioner):
         ----------
         node_numbers : NDArrayInt
             Node(s) to sample/select from the field.
-        grid : RectilinearGrid
+        grid : quickpaver.RectilinearGrid
             Grid defining the size of the field to be sampled.
         """
         self.node_numbers = np.array(node_numbers)
@@ -2807,7 +2817,7 @@ class Slicer(SubSelector):
 
     def __init__(
         self,
-        grid: RectilinearGrid,
+        grid: quickpaver.RectilinearGrid,
         span: Union[NDArrayInt, Tuple[slice, slice], NDArrayBool] = (
             slice(None),
             slice(None),
@@ -2818,7 +2828,7 @@ class Slicer(SubSelector):
 
         Parameters
         ----------
-        grid : RectilinearGrid
+        grid : quickpaver.RectilinearGrid
             Grid defining the size and shape of the field to be sliced.
         span : Union[NDArrayInt, Tuple[slice, slice], NDArrayBool], optional
             Slice, boolean mask, or index array applied to the (Fortran
@@ -3176,7 +3186,8 @@ class BoundsClipper(Preconditioner):
         np.testing.assert_allclose(
             self.dbacktransform_vec(test_data, gradient),
             # Finite difference differentiation
-            nd.Jacobian(self.backtransform, step=eps)(test_data).T @ gradient,  # type: ignore
+            np.asarray(nd.Jacobian(self.backtransform, step=eps)(test_data)).T
+            @ gradient,
             rtol=rtol,
         )
 
@@ -3549,7 +3560,7 @@ def get_factor_enforcing_grad_inf_norm(
         )
 
         if _max_workers == 1:
-            max_s_nc_updates: List[float] = []
+            max_s_nc_updates: list[float] = []
             for _scaling_factor in scaling_factors:
                 max_s_nc_updates.append(
                     get_max_update(

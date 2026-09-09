@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import gstools as gs
 import numpy as np
+
 from inv_toolbox.utils.types import NDArrayFloat
 
 # pylint: disable=C0103  # Do not conform to snake_case naming style
@@ -20,7 +21,7 @@ from inv_toolbox.utils.types import NDArrayFloat
 
 
 def gen_random_ensemble(
-    model: gs.covmodel.CovModel,
+    model: type[gs.covmodel.CovModel],
     n_ensemble: int,
     var: float,
     len_scale: Union[float, List[float], NDArrayFloat],
@@ -37,8 +38,10 @@ def gen_random_ensemble(
 
     Parameters
     ----------
-    model: CovModel
-        Covariance Model class object related to the field.
+    model: Type[CovModel]
+        Covariance Model class (not an instance) related to the field, e.g.
+        `gs.Gaussian`. Instantiated internally as
+        ``model(dim=3, var=var, len_scale=len_scale, **model_kwargs)``.
     n_ensemble : int
         Number of members in the ensemble.
     var : float

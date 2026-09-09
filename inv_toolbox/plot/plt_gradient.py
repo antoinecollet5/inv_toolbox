@@ -6,17 +6,18 @@
 from pathlib import Path
 from typing import List, Optional, Union
 
-import covmats
 import matplotlib.pyplot as plt
 import nested_grid_plotter as ngp
 import numpy as np
+import quickpaver
+
 from inv_toolbox.utils import NDArrayFloat
 
 
 def plot_2d_grad_res_adj_vs_fd(
     adj_grad: NDArrayFloat,
     fd_grad: NDArrayFloat,
-    geom: covmats.RectilinearGrid,
+    geom: quickpaver.RectilinearGrid,
     fname: str,
     fig_save_path: Path,
     grid_scaling: float = 1.0,
@@ -35,7 +36,7 @@ def plot_2d_grad_res_adj_vs_fd(
     fd_grad : NDArrayFloat
         The 2D gradient computed with finite differences, used as a
         reference to validate ``adj_grad``.
-    geom : covmats.RectilinearGrid
+    geom : quickpaver.quickpaver.RectilinearGrid
         The rectilinear grid geometry (providing ``nx``, ``ny``, ``dx`` and
         ``dy``) used to set the plot extent and well marker positions.
     fname : str

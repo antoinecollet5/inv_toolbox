@@ -13,12 +13,14 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
+import quickpaver
+
 from inv_toolbox.regularization.base import (
     Regularizator,
     make_spatial_gradient_matrices,
     make_spatial_permutation_matrices,
 )
-from inv_toolbox.utils import NDArrayFloat, NDArrayInt, RectilinearGrid
+from inv_toolbox.utils import NDArrayFloat, NDArrayInt
 from inv_toolbox.utils.operators import gradient_ffd, hessian_cfd
 from inv_toolbox.utils.preconditioner import NoTransform, Preconditioner
 
@@ -30,7 +32,7 @@ class TikhonovRegularizator(Regularizator):
 
     Attributes
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field.
     preconditioner: Preconditioner
         Parameter pre-transformation operator (variable change for the solver).
@@ -46,7 +48,7 @@ class TikhonovRegularizator(Regularizator):
     direction with 2 or fewer cells is silently ignored.
     """
 
-    grid: RectilinearGrid
+    grid: quickpaver.RectilinearGrid
     preconditioner: Preconditioner = NoTransform()
 
     def _eval_loss(self, values: NDArrayFloat) -> float:
@@ -109,7 +111,7 @@ class TikhonovMatRegularizator(Regularizator):
 
     Attributes
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field.
     sub_selection : Optional[NDArrayInt], optional
         Optional sub selection of the field. Non selected elements will be
@@ -121,7 +123,7 @@ class TikhonovMatRegularizator(Regularizator):
         is made.
     """
 
-    grid: RectilinearGrid
+    grid: quickpaver.RectilinearGrid
     sub_selection: Optional[NDArrayInt] = None
     preconditioner: Preconditioner = NoTransform()
 
@@ -185,7 +187,7 @@ class TikhonovFVMRegularizator(Regularizator):
 
     Attributes
     ----------
-    grid : RectilinearGrid
+    grid : quickpaver.RectilinearGrid
         RectilinearGrid of the field.
     sub_selection : Optional[NDArrayInt], optional
         Optional sub selection of the field. Non selected elements will be
@@ -204,7 +206,7 @@ class TikhonovFVMRegularizator(Regularizator):
     ignored.
     """
 
-    grid: RectilinearGrid
+    grid: quickpaver.RectilinearGrid
     sub_selection: Optional[NDArrayInt] = None
     preconditioner: Preconditioner = NoTransform()
 
@@ -240,7 +242,7 @@ class TikhonovFVMRegularizator(Regularizator):
         f = 0.0
         v = values.ravel("F")
         if self.grid.nx > 2:
-            tmp: float = self.grid.gamma_ij_x / self.grid.grid_cell_volume
+            tmp: float = self.grid.gamma_ij_x_m2 / self.grid.grid_cell_volume_m3
             f += 0.25 * float(
                 np.sum(
                     (
@@ -262,7 +264,7 @@ class TikhonovFVMRegularizator(Regularizator):
             )
 
         if self.grid.ny > 2:
-            tmp = self.grid.gamma_ij_y / self.grid.grid_cell_volume
+            tmp = self.grid.gamma_ij_y_m2 / self.grid.grid_cell_volume_m3
             f += 0.25 * float(
                 np.sum(
                     (
@@ -285,13 +287,13 @@ class TikhonovFVMRegularizator(Regularizator):
 
         return f
 
-    def _eval_loss_gradient_analytical(self, v: NDArrayFloat) -> NDArrayFloat:
+    def _eval_loss_gradient_analytical(self, values: NDArrayFloat) -> NDArrayFloat:
         r"""
         Compute the gradient of the regularization loss function analytically.
 
         Parameters
         ----------
-        v : NDArrayFloat
+        values : NDArrayFloat
             The parameter for which the regularization is computed.
 
         Returns
@@ -299,16 +301,17 @@ class TikhonovFVMRegularizator(Regularizator):
         NDArrayFloat
             The regularization gradient.
         """
+        v = values
         grad = np.zeros(v.size)
         if self.grid.nx > 2:
-            tmp: float = (self.grid.gamma_ij_x / self.grid.grid_cell_volume) ** 2
+            tmp: float = (self.grid.gamma_ij_x_m2 / self.grid.grid_cell_volume_m3) ** 2
             grad += tmp * (
                 (self.mat_perm_x @ (self.mat_perm_x.T @ v) - self.mat_perm_x @ v)
                 + (self.mat_perm_x.T @ (self.mat_perm_x @ v) - self.mat_perm_x.T @ v)
             )
 
         if self.grid.ny > 2:
-            tmp = (self.grid.gamma_ij_y / self.grid.grid_cell_volume) ** 2
+            tmp = (self.grid.gamma_ij_y_m2 / self.grid.grid_cell_volume_m3) ** 2
             grad += tmp * (
                 (self.mat_perm_y @ (self.mat_perm_y.T @ v) - self.mat_perm_y @ v)
                 + (self.mat_perm_y.T @ (self.mat_perm_y @ v) - self.mat_perm_y.T @ v)

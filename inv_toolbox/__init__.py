@@ -5,8 +5,8 @@
 Purpose
 =======
 
-**inv_toolbox** is an open-source, pure python, and object-oriented library that provides
-user friendly tools for inverse problem resolution (geoscience oriented).
+**inv_toolbox** is an open-source, pure python, and object-oriented library that
+provides user friendly tools for inverse problem resolution (geoscience oriented).
 
 Submodules
 ==========

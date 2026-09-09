@@ -36,7 +36,6 @@ Provide utilities to work with regular grids.
     get_a_not_in_b_1d
     get_pts_coords_regular_grid
     create_selections_array_2d
-    RectilinearGrid
     get_polygon_selection_with_dilation_2d
     get_extended_grid_shape
 
@@ -187,8 +186,9 @@ Sub module providing preconditioners and parametrization tools.
 
 """
 
+from scipy._lib._util import check_random_state  # To handle random_state
+
 from inv_toolbox.utils.callbacks import Callback
-from inv_toolbox.utils.dataclass import default_field
 from inv_toolbox.utils.enum import StrEnum
 from inv_toolbox.utils.finite_differences import (
     finite_gradient,
@@ -196,20 +196,6 @@ from inv_toolbox.utils.finite_differences import (
     is_all_close,
     is_gradient_correct,
     is_jacobian_correct,
-)
-from inv_toolbox.utils.grid import (
-    RectilinearGrid,
-    create_selections_array_2d,
-    get_a_not_in_b_1d,
-    get_array_borders_selection_2d,
-    get_array_borders_selection_3d,
-    get_extended_grid_shape,
-    get_polygon_selection_with_dilation_2d,
-    get_pts_coords_regular_grid,
-    indices_to_node_number,
-    node_number_to_indices,
-    span_to_node_numbers_2d,
-    span_to_node_numbers_3d,
 )
 from inv_toolbox.utils.means import (
     MeanType,
@@ -223,7 +209,6 @@ from inv_toolbox.utils.means import (
     harmonic_mean,
     hmean_gradient,
 )
-from inv_toolbox.utils.numpy_helpers import np_cache
 from inv_toolbox.utils.operators import (
     get_angle_btw_vectors_deg,
     get_angle_btw_vectors_rad,
@@ -247,59 +232,54 @@ from inv_toolbox.utils.types import (
     NDArrayInt,
     object_or_object_sequence_to_list,
 )
-from inv_toolbox.utils.wellfield import gen_wells_coordinates
-from scipy._lib._util import check_random_state  # To handle random_state
 
 __all__ = [
-    "node_number_to_indices",
-    "indices_to_node_number",
-    "gradient_ffd",
-    "gradient_bfd",
-    "hessian_cfd",
-    "get_angle_btw_vectors_deg",
-    "get_angle_btw_vectors_rad",
+    "Callback",
     "Filter",
     "GaussianFilter",
+    "Int",
+    "MeanType",
+    "NDArrayBool",
+    "NDArrayFloat",
+    "NDArrayInt",
     "StrEnum",
-    "finite_jacobian",
-    "finite_gradient",
-    "is_all_close",
-    "is_jacobian_correct",
-    "is_gradient_correct",
+    "amean_gradient",
+    "arithmetic_mean",
+    "check_random_state",
+    "create_selections_array_2d",
     "default_field",
-    "gen_wells_coordinates",
-    "get_super_ilu_preconditioner",
+    "dxi_arithmetic_mean",
+    "dxi_harmonic_mean",
+    "finite_gradient",
+    "finite_jacobian",
     "gen_random_ensemble",
-    "get_normalized_mean_from_lognormal_params",
-    "get_normalized_std_from_lognormal_params",
+    "get_a_not_in_b_1d",
+    "get_angle_btw_vectors_deg",
+    "get_angle_btw_vectors_rad",
+    "get_array_borders_selection_2d",
+    "get_array_borders_selection_3d",
+    "get_extended_grid_shape",
     "get_log_normalized_mean_from_normal_params",
     "get_log_normalized_std_from_normal_params",
-    "arithmetic_mean",
-    "dxi_arithmetic_mean",
-    "harmonic_mean",
-    "dxi_harmonic_mean",
-    "MeanType",
     "get_mean_values_for_last_axis",
-    "amean_gradient",
-    "gmean_gradient",
-    "hmean_gradient",
     "get_mean_values_gradient_for_last_axis",
+    "get_normalized_mean_from_lognormal_params",
+    "get_normalized_std_from_lognormal_params",
+    "get_polygon_selection_with_dilation_2d",
+    "get_pts_coords_regular_grid",
+    "get_super_ilu_preconditioner",
+    "gmean_gradient",
+    "gradient_bfd",
+    "gradient_ffd",
+    "harmonic_mean",
+    "hessian_cfd",
+    "hmean_gradient",
+    "indices_to_node_number",
+    "is_all_close",
+    "is_gradient_correct",
+    "is_jacobian_correct",
+    "node_number_to_indices",
     "object_or_object_sequence_to_list",
     "span_to_node_numbers_2d",
     "span_to_node_numbers_3d",
-    "get_array_borders_selection_2d",
-    "get_array_borders_selection_3d",
-    "get_pts_coords_regular_grid",
-    "NDArrayFloat",
-    "NDArrayInt",
-    "NDArrayBool",
-    "Int",
-    "get_a_not_in_b_1d",
-    "create_selections_array_2d",
-    "RectilinearGrid",
-    "get_extended_grid_shape",
-    "get_polygon_selection_with_dilation_2d",
-    "Callback",
-    "np_cache",
-    "check_random_state",
 ]
