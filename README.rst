@@ -6,7 +6,7 @@ inv_toolbox
 
 🐍 A toolbox for inverse problem resolution.
 
-**The complete and up to date documentation can be found here**: https://inv_toolbox.readthedocs.io.
+**The complete and up to date documentation can be found here**: https://inv-toolbox.readthedocs.io.
 
 ===============
 🎯 Motivations
@@ -243,7 +243,7 @@ TODO
     :alt: Build Status
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/inv_toolbox/badge/?version=latest
-    :target: https://inv_toolbox.readthedocs.io/en/latest/?badge=latest
+    :target: https://inv-toolbox.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. |Coverage| image:: https://codecov.io/gh/antoinecollet5/inv_toolbox/graph/badge.svg?token=oY3XZ1QTz3

@@ -44,7 +44,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://pypi.org/project/inv_toolbox/"
-Documentation = "https://inv_toolbox.readthedocs.io/en/latest/"
+Documentation = "https://inv-toolbox.readthedocs.io/en/latest/"
 Repository = "https://github.com/antoinecollet5/inv_toolbox"
 Issues = "https://github.com/antoinecollet5/inv_toolbox/issues"
 Changelog = "https://github.com/antoinecollet5/inv_toolbox/blob/master/CHANGELOG.rst"
