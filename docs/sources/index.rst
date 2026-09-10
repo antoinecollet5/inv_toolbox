@@ -1,5 +1,5 @@
 Welcome to inv_toolbox's documentation!
-===================================
+=======================================
 
 .. include:: readme.rst
 
@@ -9,7 +9,6 @@ Welcome to inv_toolbox's documentation!
 
    installation
    api_reference
-   usage
    contributing
    bibliography
    changelog
