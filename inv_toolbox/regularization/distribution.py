@@ -229,7 +229,7 @@ def cdf_distance_gradient(
     v_values: ArrayLike,
     u_weights: Optional[ArrayLike] = None,
     v_weights: Optional[ArrayLike] = None,
-    dtype=np.dtype,
+    dtype: np.typing.DTypeLike = np.float64,
 ) -> NDArrayFloat:
     r"""
     Compute, between two one-dimensional distributions :math:`u` and
