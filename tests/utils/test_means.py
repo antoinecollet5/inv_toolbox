@@ -34,7 +34,11 @@ def test_dxi_arithmetic_mean() -> None:
 
     np.testing.assert_allclose(
         dxi_arithmetic_mean(xi, xj),
-        nd.Derivative(arithmetic_mean, n=1, step=sys.float_info.epsilon * 1e10)(xi, xj),
+        np.asarray(
+            nd.Derivative(arithmetic_mean, n=1, step=sys.float_info.epsilon * 1e10)(
+                xi, xj
+            )
+        ),
         rtol=0.05,
     )
 
@@ -50,7 +54,9 @@ def test_dxi_harmonic_mean() -> None:
 
     np.testing.assert_allclose(
         dxi_harmonic_mean(xi, xj),
-        nd.Derivative(harmonic_mean, n=1, step=sys.float_info.epsilon)(xi, xj),
+        np.asarray(
+            nd.Derivative(harmonic_mean, n=1, step=sys.float_info.epsilon)(xi, xj)
+        ),
         rtol=0.05,
     )
 
@@ -116,9 +122,13 @@ def test_means_gradient(mean, mean_gradient) -> None:
         mean, step=np.min(test_values) * 1e-4
     )  # impose the step to avoid being below zero.
     # not optimal to test on a logsclae... so we use atol instead or rtol
-    np.testing.assert_allclose(fd(test_values), mean_gradient(test_values), atol=1e-4)
     np.testing.assert_allclose(
-        fd(test_values, weights=weights), mean_gradient(test_values, weights), atol=1e-4
+        np.asarray(fd(test_values)), mean_gradient(test_values), atol=1e-4
+    )
+    np.testing.assert_allclose(
+        np.asarray(fd(test_values, weights=weights)),
+        mean_gradient(test_values, weights),
+        atol=1e-4,
     )
 
 
@@ -180,11 +190,13 @@ def test_get_mean_values_gradient_for_last_axis(
             deriv = np.zeros((arr.shape[0], 1))
 
         if arr.shape[-1] != 1 and len(arr.shape) != 1:
-            jac = nd.Jacobian(wrapper, step=1e-6)(arr.ravel())
+            jac = np.asarray(nd.Jacobian(wrapper, step=1e-6)(arr.ravel()))
             for i in range(arr.shape[-1]):
                 deriv[:, i] = jac[i][i :: arr.shape[-1]]
         else:
-            jac = nd.Gradient(wrapper2, step=1e-6)(arr.ravel()).reshape(-1, 1)
+            jac = np.asarray(nd.Gradient(wrapper2, step=1e-6)(arr.ravel())).reshape(
+                -1, 1
+            )
             deriv = jac
 
         np.testing.assert_allclose(res, deriv.reshape(arr.shape))
