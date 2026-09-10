@@ -7,8 +7,24 @@ import scipy as sp
 from inv_toolbox.regularization import (
     GeostatisticalRegularizator,
 )
+from inv_toolbox.regularization.geostatistical import identify_function, one
 from inv_toolbox.utils import NDArrayFloat
 from inv_toolbox.utils.preconditioner import LinearTransform
+
+
+def test_identify_function() -> None:
+    x = np.array([1.0, -2.5, 3.0])
+    np.testing.assert_array_equal(identify_function(x), x)
+    # must be the untransformed input, not a copy with altered values
+    assert identify_function(x) is x
+
+
+def test_one() -> None:
+    x = np.array([1.0, -2.5, 3.0])
+    np.testing.assert_array_equal(one(x), np.ones(3))
+
+    x2d = np.zeros((2, 4))
+    np.testing.assert_array_equal(one(x2d), np.ones((2, 4)))
 
 
 @no_type_check
