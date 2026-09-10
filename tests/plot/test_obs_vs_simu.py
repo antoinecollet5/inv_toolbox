@@ -4,10 +4,11 @@ import pytest
 from inv_toolbox.plot import plot_observed_vs_simulated
 
 
-def test_plot_observed_s_simulated() -> None:
-    obs = np.random.normal(loc=1, scale=1, size=200)
-    pred_after_inversion = obs + np.random.normal(loc=0, scale=0.1, size=200)
-    pred_before_inversion = obs + np.random.normal(loc=0, scale=0.5, size=200)
+@pytest.mark.parametrize("n", (1, 200))
+def test_plot_observed_s_simulated(n: int) -> None:
+    obs = np.random.normal(loc=1, scale=1, size=n)
+    pred_after_inversion = obs + np.random.normal(loc=0, scale=0.1, size=n)
+    pred_before_inversion = obs + np.random.normal(loc=0, scale=0.5, size=n)
 
     # Test with minimum arguments
     fig, ax = plt.subplots()

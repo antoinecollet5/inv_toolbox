@@ -10,6 +10,9 @@ from inv_toolbox.utils import object_or_object_sequence_to_list
         (1.0, [1.0]),
         ((1.0, 2.0), [1.0, 2.0]),
         ([1.0, 2.0, 3.0], [1.0, 2.0, 3.0]),
+        # str and bytes are atomic values, not sequences of characters/bytes
+        ("abc", ["abc"]),
+        (b"abc", [b"abc"]),
     ],
 )
 def test_object_or_object_sequence_to_list(_input, expected) -> None:

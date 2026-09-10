@@ -2,7 +2,12 @@
 import numdifftools as nd
 import numpy as np
 import pytest
-from inv_toolbox.utils import finite_gradient, finite_jacobian, is_gradient_correct
+from inv_toolbox.utils import (
+    finite_gradient,
+    finite_jacobian,
+    is_gradient_correct,
+    is_jacobian_correct,
+)
 from inv_toolbox.utils.finite_differences import rosen, rosen_gradient, rosen_hessian
 
 
@@ -31,6 +36,32 @@ def test_hessian(values) -> None:
 def test_finite_difference_accuracy() -> None:
     with pytest.raises(ValueError, match="The accuracy should be 0, 1, 2 or 3!"):
         finite_gradient(np.array([1.0, 1.0]), rosen, accuracy=4)
+
+
+def test_finite_gradient_with_explicit_eps() -> None:
+    # covers the branch where `eps` is passed explicitly (not None)
+    np.testing.assert_allclose(
+        rosen_gradient(np.array([1.0, 1.0])),
+        finite_gradient(np.array([1.0, 1.0]), rosen, eps=1e-6),
+        atol=1e-4,
+    )
+
+
+def test_is_jacobian_correct_with_jac_args() -> None:
+    # covers the branch where `jac_args` is not None
+    def fun2(x, factor):
+        return x[0] * x[1] * x[2] ** 2 * factor
+
+    def jac2(x, factor):
+        return np.array([18.0, 9.0, 12.0]) * factor
+
+    assert is_jacobian_correct(
+        np.array([1.0, 2.0, 3.0]),
+        fm=fun2,
+        jac=jac2,
+        fm_args=(1.0,),
+        jac_args=(1.0,),
+    )
 
 
 def test_finite_jacobian() -> None:

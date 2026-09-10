@@ -1006,3 +1006,81 @@ def test_gradient_scaling(
         ub_nc=ub_nc,
     )
     assert new_scaling_factor == 1.0
+
+
+def test_linear_transform_zero_slope_error() -> None:
+    with pytest.raises(
+        ValueError,
+        match="'slope' must be non-zero, otherwise LinearTransform is not invertible!",
+    ):
+        LinearTransform(slope=0.0, y_intercept=1.0)
+
+
+def test_linear_transform_zero_slope_array_error() -> None:
+    with pytest.raises(
+        ValueError,
+        match="'slope' must be non-zero, otherwise LinearTransform is not invertible!",
+    ):
+        LinearTransform(slope=np.zeros(3), y_intercept=0.0)
+
+
+def test_cost_fun() -> None:
+    from inv_toolbox.utils.preconditioner import cost_fun
+
+    pcd = LinearTransform(slope=50.0, y_intercept=0.0)
+    s_nc = np.ones(10) * 1e-4
+    grad_nc = -np.ones_like(s_nc) * 600.0
+    gsc = GradientScalerConfig(max_change_target=0.8, pcd_change_eval=NoTransform())
+
+    update = get_max_update(1.0, pcd, s_nc, grad_nc, gsc)
+    expected = np.log((update - gsc.max_change_target) ** 2 + 1)
+    np.testing.assert_allclose(
+        cost_fun(1.0, pcd, s_nc, grad_nc, gsc.max_change_target, gsc), expected
+    )
+
+
+def test_get_factor_enforcing_grad_inf_norm_argmin_at_lower_bound() -> None:
+    # An unreachably large target makes the best sample the one with the
+    # smallest scaling factor (index 0) at every round -> covers the
+    # "argmin == 0" branch (lb = scaling_factor).
+    pcd = LinearTransform(slope=50.0, y_intercept=0.0)
+    s_nc = np.ones(10) * 1e-4
+    grad_nc = -np.ones_like(s_nc) * 600.0
+
+    gsc = GradientScalerConfig(
+        max_workers=1,
+        max_change_target=1e25,
+        n_samples_in_first_round=50,
+        rtol=1e-8,
+        lb=1e-10,
+        ub=1e10,
+    )
+    scaling_factor = get_factor_enforcing_grad_inf_norm(
+        s_nc, grad_nc, pcd, gsc, logger=scaler_log
+    )
+    # Unreachable target -> does not converge, falls back to 1.0
+    assert scaling_factor == 1.0
+
+
+def test_get_factor_enforcing_grad_inf_norm_argmin_at_upper_bound() -> None:
+    # A target below what's reachable in [lb, ub] (but not exactly zero, to
+    # avoid a division by zero in the relative-error computation) makes the
+    # best sample the one with the largest scaling factor (last index) ->
+    # covers the "argmin == len(scaling_factors) - 1" branch
+    # (ub = scaling_factor).
+    pcd = LinearTransform(slope=50.0, y_intercept=0.0)
+    s_nc = np.ones(10) * 1e-4
+    grad_nc = -np.ones_like(s_nc) * 600.0
+
+    gsc = GradientScalerConfig(
+        max_workers=1,
+        max_change_target=1e-9,
+        n_samples_in_first_round=50,
+        rtol=1e-8,
+        lb=1e-3,
+        ub=1e3,
+    )
+    scaling_factor = get_factor_enforcing_grad_inf_norm(
+        s_nc, grad_nc, pcd, gsc, logger=scaler_log
+    )
+    assert scaling_factor == 1.0
