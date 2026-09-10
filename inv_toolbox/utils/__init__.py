@@ -200,13 +200,6 @@ from inv_toolbox.utils.operators import (
     gradient_ffd,
     hessian_cfd,
 )
-from inv_toolbox.utils.random_field import (
-    gen_random_ensemble,
-    get_log_normalized_mean_from_normal_params,
-    get_log_normalized_std_from_normal_params,
-    get_normalized_mean_from_lognormal_params,
-    get_normalized_std_from_lognormal_params,
-)
 from inv_toolbox.utils.spatial_filters import Filter, GaussianFilter
 from inv_toolbox.utils.types import (
     Int,
@@ -242,8 +235,6 @@ __all__ = [
     "get_array_borders_selection_2d",
     "get_array_borders_selection_3d",
     "get_extended_grid_shape",
-    "get_log_normalized_mean_from_normal_params",
-    "get_log_normalized_std_from_normal_params",
     "get_mean_values_for_last_axis",
     "get_mean_values_gradient_for_last_axis",
     "get_normalized_mean_from_lognormal_params",

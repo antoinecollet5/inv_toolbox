@@ -42,6 +42,7 @@ They can be combined through the :class:`ChainedTransforms` interface.
     Slicer
     Uniform2Gaussian
     BoundsClipper
+    RangeRescaler
 
 Gradient Scaling
 ^^^^^^^^^^^^^^^^
@@ -107,6 +108,7 @@ import numdifftools as nd
 import numpy as np
 import quickpaver
 import scipy as sp
+from numpy.typing import ArrayLike
 from scipy.sparse.linalg import LinearOperator
 
 from inv_toolbox.utils import (
@@ -1062,7 +1064,7 @@ class LogTransform(Preconditioner):
 
 
 def logistic(
-    s: NDArrayFloat, s0: float = 0.0, rate: float = 1.0, supremum: float = 1.0
+    s: ArrayLike, s0: float = 0.0, rate: float = 1.0, supremum: float = 1.0
 ) -> NDArrayFloat:
     """
     Return the logistic function (inverse to logit).
@@ -1083,7 +1085,7 @@ def logistic(
     NDArrayFloat
         Logistic values.
     """
-    return supremum / (1.0 + np.exp(-rate * (s - s0)))
+    return supremum / (1.0 + np.exp(-rate * (np.asarray(s) - s0)))
 
 
 def logit(
@@ -2669,7 +2671,7 @@ class SubSelector(Preconditioner):
     """Apply a selection on the input field, keeping the rest of it fixed."""
 
     def __init__(
-        self, node_numbers: NDArrayInt, grid: quickpaver.RectilinearGrid
+        self, node_numbers: ArrayLike, grid: quickpaver.RectilinearGrid
     ) -> None:
         """
         Initialize the instance.

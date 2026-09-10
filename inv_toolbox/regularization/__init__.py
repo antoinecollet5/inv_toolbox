@@ -71,7 +71,6 @@ an ensemble of realizations.
    :toctree: _autosummary
 
     GeostatisticalRegularizator
-    EnsembleRegularizator
 
 Regularization weights selection
 ================================
@@ -116,7 +115,6 @@ from inv_toolbox.regularization.base import (
 from inv_toolbox.regularization.discrete import DiscreteRegularizator
 from inv_toolbox.regularization.distribution import ProbDistFitting
 from inv_toolbox.regularization.geostatistical import (
-    EnsembleRegularizator,
     GeostatisticalRegularizator,
 )
 from inv_toolbox.regularization.lcurve import get_l_curvature
@@ -139,7 +137,6 @@ __all__ = [
     "TVRegularizator",
     "TVMatRegularizator",
     "GeostatisticalRegularizator",
-    "EnsembleRegularizator",
     "AdaptiveUCRegweight",
     "AdaptiveRegweight",
     "ConstantRegWeight",
