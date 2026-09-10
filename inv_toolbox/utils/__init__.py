@@ -52,23 +52,6 @@ Utilities to create wellfields.
 
     gen_wells_coordinates
 
-.. currentmodule:: inv_toolbox.utils.random_field
-
-Random fields
-^^^^^^^^^^^^^
-Provide utilities to generate random fields. This is based on the
-`GStools package
-<https://geostat-framework.readthedocs.io/projects/gstools/en/stable/index.html>`_.
-
-.. autosummary::
-   :toctree: _autosummary
-
-    gen_random_ensemble
-    get_normalized_mean_from_lognormal_params
-    get_normalized_std_from_lognormal_params
-    get_log_normalized_mean_from_normal_params
-    get_log_normalized_std_from_normal_params
-
 .. currentmodule:: inv_toolbox.utils.enum
 
 Working string enums
