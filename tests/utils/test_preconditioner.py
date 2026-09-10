@@ -1,6 +1,6 @@
 import logging
 from contextlib import nullcontext as does_not_raise
-from typing import Optional, no_type_check
+from typing import Optional
 
 import covmats
 import numdifftools as nd
@@ -51,36 +51,10 @@ from inv_toolbox.utils.preconditioner import (
     to_new_range_derivative,
 )
 
-
-@no_type_check
-def _get_L_D_P(A: sp.sparse.sparray):
-    """
-    Return L, D and P from the factorization L @ D @ L' = P @ A @ P' using sksparse.
-
-    Note that sksparse uses SuiteSparse which is LGPL licence.
-    """
-    import sksparse.cholmod as cholmod
-
-    # Need to take the API change into account
-    try:
-        # sksparse 4.x
-        L, D, P = cholmod.ldl(A, order="amd")
-    except AttributeError:
-        # sksparse 5.x
-        f = cholmod.cholesky(A)
-        (L, D), P = f.L_D(), f.P()
-    return L, D, P
-
-
 logger = logging.getLogger("ROOT")
 scaler_log = logging.getLogger("SCALER")
 logger.setLevel(logging.INFO)
 scaler_log.setLevel(logging.INFO)
-
-
-def _get_scf(A: sp.sparse.sparray) -> covmats.SparseCholeskyFactor:
-    """Return a cholesky factorization of the precision matrix."""
-    return covmats.SparseCholeskyFactor(*_get_L_D_P(A))
 
 
 @pytest.mark.parametrize(
@@ -441,7 +415,11 @@ def _get_dense_cov(n: int = 9, seed: int = 5) -> covmats.CovViaCholesky:
 def _get_sparse_cov(seed: int = 2026) -> covmats.CovViaSparseCholesky:
     """A sparse covariance (via SparseCholeskyFactor) for GDPNCS/GDPCS tests."""
     A = get_SPD_sparse_n11_example(seed=seed)
-    return covmats.CovViaSparseCholesky(_get_scf(A))
+    L, D, P = sp.linalg.ldl(A.toarray())  # dense LDL' for this example
+    factor = covmats.SparseCholeskyFactor(
+        sp.sparse.csc_array(L), sp.sparse.csc_array(D), P
+    )
+    return covmats.CovViaSparseCholesky(factor)
 
 
 def _dense_point_obs(idx, n: int) -> NDArrayFloat:
