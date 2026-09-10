@@ -25,6 +25,7 @@ dependencies = [
     "quickpaver>=0.4.0",
     "packaging",
     "typing_extensions",
+    "nested_grid_plotter>=2.1.1",
 ]
 
 requires-python = ">=3.10"
@@ -88,7 +89,7 @@ lint = [
     "pre-commit-hooks",
     "codespell>=2.1.0",
     "ruff",
-    "ty==0.0.79",
+    "ty==0.0.80",
 ]
 install = ["pip", "wheel"]
 

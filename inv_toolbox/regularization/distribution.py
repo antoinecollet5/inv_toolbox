@@ -229,6 +229,7 @@ def cdf_distance_gradient(
     v_values: ArrayLike,
     u_weights: Optional[ArrayLike] = None,
     v_weights: Optional[ArrayLike] = None,
+    dtype=np.dtype,
 ) -> NDArrayFloat:
     r"""
     Compute, between two one-dimensional distributions :math:`u` and
@@ -322,10 +323,10 @@ def cdf_distance_gradient(
 
     # Second approach strictly equivalent but faster
     grad = (
-        -np.concatenate([_temp, [0.0]], dtype=np.float64)[np.argsort(all_sorter)][
+        -np.concatenate([_temp, [0.0]], dtype=dtype)[np.argsort(all_sorter)][
             : np.size(new_u)
         ]
-        + np.concatenate([[0.0], _temp], dtype=np.float64)[np.argsort(all_sorter)][
+        + np.concatenate([[0.0], _temp], dtype=dtype)[np.argsort(all_sorter)][
             : np.size(new_u)
         ]
     )
@@ -336,7 +337,7 @@ def cdf_distance_gradient(
     out[old_u_indices] = grad / new_u_weights
     out = ffill(out)[np.argsort(u_sorter)]
     if u_weights is not None:
-        return out * np.array(u_weights, dtype=np.float64)
+        return out * np.array(u_weights, dtype=dtype)
     else:
         return out
 

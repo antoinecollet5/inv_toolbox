@@ -18,10 +18,71 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import scipy as sp
-from lbfgsb.base import get_bounds
+from numpy.typing import ArrayLike
 
 from inv_toolbox.regularization.base import RegWeightUpdateStrategy
 from inv_toolbox.utils import NDArrayFloat, NDArrayInt
+
+
+def _get_bounds(
+    x0: NDArrayFloat, bounds: Optional[ArrayLike]
+) -> Tuple[NDArrayFloat, NDArrayFloat]:
+    """
+    Return the lower and upper bounds arrays.
+
+    Parameters
+    ----------
+    x0 : NDArrayFloat
+        Vector of unknowns to optimize.
+    bounds : Optional[ArrayLike]
+        Array like with shape (n, 2), n being the number of parameters to optimize.
+
+    Returns
+    -------
+    Tuple[NDArrayFloat, NDArrayFloat]
+        1-D arrays with lower and upper bounds respectively.
+
+    Raises
+    ------
+    ValueError
+        If x0 is an empty vector or if the length of x0 does not match the length
+        of the bounds.
+    ValueError
+        If there are some values in x0 that violate the bounds.
+
+    """
+    n = x0.shape[0]
+    if n == 0:
+        raise ValueError("x0 cannot be an empty vector!")
+    if bounds is None:
+        return np.repeat(-np.inf, n), np.repeat(np.inf, n)
+
+    # make sure than None are converted to nan
+    _bounds = np.asarray(bounds, dtype=np.float64)
+    if np.shape(_bounds) != (n, 2):
+        raise ValueError(
+            f"Bounds have shape ({np.shape(_bounds)}), while shape "
+            f"({n}, 2) is expected!"
+        )
+
+    lb, ub = _bounds.T
+    # replace nan by inf
+    lb[np.isnan(lb)] = -np.inf
+    ub[np.isnan(ub)] = np.inf
+
+    # check bounds
+    if (lb > ub).any():
+        raise ValueError("One of the lower bounds is greater than an upper bound.")
+
+    if (x0 < lb).any() or (x0 > ub).any():
+        raise ValueError(
+            f"There are {np.count_nonzero(x0 < lb)} values violating the lower bounds"
+            f" and {np.count_nonzero(x0 > ub)} values violating the upper bounds!"
+        )
+
+    # initial vector must lie within the bounds. Otherwise ScalarFunction and
+    # approx_derivative will cause problems
+    return lb, ub
 
 
 class AdaptiveRegweight(RegWeightUpdateStrategy, ABC):
@@ -88,7 +149,7 @@ class AdaptiveRegweight(RegWeightUpdateStrategy, ABC):
             )
 
         self.reg_weight_bounds = np.array(
-            [get_bounds(np.array([reg_weight_init]), np.array([reg_weight_bounds]))]
+            [_get_bounds(np.array([reg_weight_init]), np.array([reg_weight_bounds]))]
         ).ravel()
         if (self.reg_weight_bounds < 0).any():
             raise ValueError(
