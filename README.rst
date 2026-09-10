@@ -2,7 +2,7 @@
 inv_toolbox
 ============
 
-|License| |Stars| |Python| |PyPI| |Downloads| |Build Status| |Documentation Status| |Coverage| |Precommit: enabled| |Ruff| |ty|
+|License| |Stars| |Python| |PyPI| |Downloads| |Build Status| |Documentation Status| |Codacy| |Coverage| |Precommit: enabled| |Ruff| |ty|
 
 🐍 A toolbox for inverse problem resolution.
 
@@ -250,7 +250,7 @@ TODO
     :target: https://codecov.io/gh/antoinecollet5/inv_toolbox
     :alt: Coverage
 
-.. |Codacy| image:: https://app.codacy.com/project/badge/Grade/122673cd1d104aa28ada0c44b1f4e7d6
+.. |Codacy| image:: https://app.codacy.com/project/badge/Grade/ec9b9a76589c4b3d867c92ddb0e8e19a
     :target: https://app.codacy.com/gh/antoinecollet5/inv_toolbox/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
     :alt: codacy
 
