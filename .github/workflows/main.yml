@@ -66,6 +66,7 @@ jobs:
         run: |
           pip install uv
           uv venv
+          uv pip install -e ".[all]"
 
       - name: Debug pytest plugins
         run: |
