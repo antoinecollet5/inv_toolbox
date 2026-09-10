@@ -154,6 +154,7 @@ Other functions
     NDArrayInt
     NDArrayBool
     Int
+    ArrayLike
 
 Preconditioners
 ^^^^^^^^^^^^^^^
@@ -202,6 +203,7 @@ from inv_toolbox.utils.operators import (
 )
 from inv_toolbox.utils.spatial_filters import Filter, GaussianFilter
 from inv_toolbox.utils.types import (
+    ArrayLike,
     Int,
     NDArrayBool,
     NDArrayFloat,
@@ -218,6 +220,7 @@ __all__ = [
     "NDArrayBool",
     "NDArrayFloat",
     "NDArrayInt",
+    "ArrayLike",
     "StrEnum",
     "amean_gradient",
     "arithmetic_mean",

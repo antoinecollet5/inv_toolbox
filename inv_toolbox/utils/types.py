@@ -13,6 +13,7 @@ NDArrayFloat = npt.NDArray[np.floating]
 NDArrayInt = npt.NDArray[np.integer]
 NDArrayBool = npt.NDArray[np.bool_]
 Int = Union[int, NDArrayInt, Sequence[int]]
+ArrayLike = npt.ArrayLike
 
 _Object = TypeVar("_Object", bound=object)
 

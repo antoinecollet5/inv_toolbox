@@ -4,26 +4,26 @@
 """Provide plot utilities for gradient comparison"""
 
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Iterable, Optional
 
 import matplotlib.pyplot as plt
 import nested_grid_plotter as ngp
 import numpy as np
 import quickpaver
 
-from inv_toolbox.utils import NDArrayFloat
+from inv_toolbox.utils import ArrayLike
 
 
 def plot_2d_grad_res_adj_vs_fd(
-    adj_grad: NDArrayFloat,
-    fd_grad: NDArrayFloat,
+    adj_grad: ArrayLike,
+    fd_grad: ArrayLike,
     geom: quickpaver.RectilinearGrid,
     fname: str,
     fig_save_path: Path,
     grid_scaling: float = 1.0,
     res_scaling: Optional[float] = None,
-    prod_locations: Optional[Union[NDArrayFloat, List[NDArrayFloat]]] = None,
-    inj_locations: Optional[Union[NDArrayFloat, List[NDArrayFloat]]] = None,
+    prod_locations: Optional[Iterable] = None,
+    inj_locations: Optional[Iterable] = None,
 ) -> None:
     """
     Plot a side-by-side comparison of the adjoint-state and finite-difference
@@ -31,9 +31,9 @@ def plot_2d_grad_res_adj_vs_fd(
 
     Parameters
     ----------
-    adj_grad : NDArrayFloat
+    adj_grad : ArrayLike
         The 2D gradient computed with the adjoint-state method.
-    fd_grad : NDArrayFloat
+    fd_grad : ArrayLike
         The 2D gradient computed with finite differences, used as a
         reference to validate ``adj_grad``.
     geom : quickpaver.quickpaver.RectilinearGrid
@@ -52,10 +52,10 @@ def plot_2d_grad_res_adj_vs_fd(
         display purposes. If None (default), a factor is automatically
         chosen so that the scaled residuals' amplitude stays just below
         that of ``adj_grad``.
-    prod_locations : Optional[Union[NDArrayFloat, List[NDArrayFloat]]], optional
+    prod_locations : Optional[Union[ArrayLike, List[ArrayLike]]], optional
         Grid-index locations (i, j) of the production wells to display as
         markers on every subplot. The default is None (no markers).
-    inj_locations : Optional[Union[NDArrayFloat, List[NDArrayFloat]]], optional
+    inj_locations : Optional[Union[ArrayLike, List[ArrayLike]]], optional
         Grid-index locations (i, j) of the injection wells to display as
         markers on every subplot. The default is None (no markers).
 
@@ -75,7 +75,7 @@ def plot_2d_grad_res_adj_vs_fd(
     )
 
     # We multiply the residuals so that the high residulas is just below the max values
-    residuals = adj_grad - fd_grad
+    residuals = np.asarray(adj_grad) - np.asarray(fd_grad)
 
     if res_scaling is None:
         res_factor = 1.0
@@ -98,8 +98,8 @@ def plot_2d_grad_res_adj_vs_fd(
         axes=plotter.axes,
         fig=plotter.fig,
         data={
-            "Finite differences": fd_grad,
-            "Adjoint state": adj_grad,
+            "Finite differences": np.asarray(fd_grad),
+            "Adjoint state": np.asarray(adj_grad),
             f"Residuals (x {res_factor:.0e})": residuals * res_factor,
         },
         imshow_kwargs={
