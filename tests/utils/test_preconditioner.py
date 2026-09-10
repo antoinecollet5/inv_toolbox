@@ -823,7 +823,7 @@ def test_rescale_to_bounds() -> None:
 
     np.testing.assert_allclose(
         to_new_range_derivative(x, -5, 5, -1.0, 1.0) * g,
-        nd.Jacobian(to_new_range_wrapper)(x) @ g,
+        np.asarray(nd.Jacobian(to_new_range_wrapper)(x)) @ g,
     )
 
     y = to_new_range(x, -5, 5, 1e-10, 1e-1, is_log10=True)
@@ -838,7 +838,7 @@ def test_rescale_to_bounds() -> None:
 
     np.testing.assert_allclose(
         to_new_range_derivative(x, -1, 1, 1.0, 10.0, is_log10=True) * g,
-        nd.Jacobian(to_new_range_wrapper_log)(x) @ g,
+        np.asarray(nd.Jacobian(to_new_range_wrapper_log)(x)) @ g,
     )
 
 
@@ -858,7 +858,7 @@ def test_tanh_wrapper(s0: float, rate: float, supremum: float) -> None:
 
     np.testing.assert_allclose(
         dtanh_wrapper(x, s0, rate, supremum) * g,
-        nd.Jacobian(tanh_wrapper2)(x) @ g,
+        np.asarray(nd.Jacobian(tanh_wrapper2)(x)) @ g,
         rtol=1e-5,
         atol=1e-5,
     )
@@ -869,7 +869,7 @@ def test_tanh_wrapper(s0: float, rate: float, supremum: float) -> None:
     if rate < 1.5:
         np.testing.assert_allclose(
             darctanh_wrapper(y, s0, rate, supremum) * g,
-            nd.Jacobian(arctanh_wrapper2, step=1e-10)(y) @ g,
+            np.asarray(nd.Jacobian(arctanh_wrapper2, step=1e-10)(y)) @ g,
             rtol=1e-5,
             atol=1e-5,
         )
@@ -940,7 +940,7 @@ def test_boundsclipper() -> None:
     np.testing.assert_allclose(
         pcd.dbacktransform_vec(test_data, gradient),
         # Finite difference differentiation
-        nd.Jacobian(pcd.backtransform, step=None)(test_data).T @ gradient,
+        np.asarray(nd.Jacobian(pcd.backtransform, step=None)(test_data)).T @ gradient,
         rtol=1e-5,
     )
 

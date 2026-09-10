@@ -22,7 +22,9 @@ def test_gradient(values, max_workers) -> None:
 @pytest.mark.parametrize("values", [([1.0, 1.0]), ([1.5, -0.5]), ([0.0, 1.9])])
 def test_hessian(values) -> None:
     np.testing.assert_allclose(
-        rosen_hessian(np.array(values)), nd.Hessian(rosen)(values), atol=1e-4
+        rosen_hessian(np.array(values)),
+        np.asarray(nd.Hessian(rosen)(values)),
+        atol=1e-4,
     )
 
 
