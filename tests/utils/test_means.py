@@ -48,6 +48,29 @@ def test_harmonic_mean(xi, xj, expected) -> None:
     np.testing.assert_allclose(harmonic_mean(xi, xj), expected, rtol=1e-1)
 
 
+@pytest.mark.parametrize(
+    "xi,xj,expected",
+    [
+        (0.0, 0.0, 0.0),  # both zero
+        (0.0, 5.0, 0.0),  # one zero -> limit is 0
+        (5.0, 0.0, 0.0),
+        (5.0, -5.0, np.nan),  # undefined: xi + xj == 0 with non-zero values
+    ],
+)
+def test_harmonic_mean_zero_division(xi, xj, expected) -> None:
+    with np.errstate(all="raise"):  # no numpy warning must be emitted
+        res = harmonic_mean(xi, xj)
+    np.testing.assert_array_equal(res, expected)
+
+
+def test_harmonic_mean_zero_division_vectorized() -> None:
+    xi = np.array([0.0, 0.0, 2.0, 4.0, 3.0])
+    xj = np.array([0.0, 5.0, 0.0, 4.0, -3.0])
+    with np.errstate(all="raise"):
+        res = harmonic_mean(xi, xj)
+    np.testing.assert_array_equal(res, np.array([0.0, 0.0, 0.0, 4.0, np.nan]))
+
+
 def test_dxi_harmonic_mean() -> None:
     xi = np.power(10, np.linspace(-12, -3, num=20))
     xj = np.power(10, np.linspace(-9, -1, num=20))
@@ -59,6 +82,21 @@ def test_dxi_harmonic_mean() -> None:
         ),
         rtol=0.05,
     )
+
+
+@pytest.mark.parametrize(
+    "xi,xj,expected",
+    [
+        (0.0, 0.0, 0.5),  # direction-dependent: symmetric convention
+        (0.0, 5.0, 2.0),  # regular formula still valid with xi == 0
+        (5.0, 0.0, 0.0),
+        (5.0, -5.0, np.nan),  # undefined: xi + xj == 0 with non-zero values
+    ],
+)
+def test_dxi_harmonic_mean_zero_division(xi, xj, expected) -> None:
+    with np.errstate(all="raise"):
+        res = dxi_harmonic_mean(xi, xj)
+    np.testing.assert_array_equal(res, expected)
 
 
 @pytest.mark.parametrize(
@@ -101,6 +139,24 @@ def test_get_mean_values_for_last_axis(
     )
 
 
+@pytest.mark.parametrize(
+    "mean_type, expected",
+    (
+        (MeanType.ARITHMETIC, np.array([1.5, 2.5, 3.5])),
+        (MeanType.GEOMETRIC, np.array([0.0, 2.0, np.sqrt(10.0)])),
+        (MeanType.HARMONIC, np.array([0.0, 1.6, 20.0 / 7.0])),
+    ),
+)
+def test_get_mean_values_for_last_axis_with_zero(
+    mean_type: MeanType, expected: NDArrayFloat
+) -> None:
+    # first column contains a zero: geometric and harmonic means are 0
+    arr = np.array([[0.0, 1.0, 2.0], [3.0, 4.0, 5.0]])
+    with np.errstate(all="raise"):
+        res = get_mean_values_for_last_axis(arr, mean_type)
+    np.testing.assert_allclose(res, expected)
+
+
 def test_get_mean_values_for_last_axis_error() -> None:
     with pytest.raises(
         ValueError, match="The number of weights must match the number of grid cells."
@@ -130,6 +186,60 @@ def test_means_gradient(mean, mean_gradient) -> None:
         mean_gradient(test_values, weights),
         atol=1e-4,
     )
+
+
+@pytest.mark.parametrize(
+    "values, weights, expected",
+    (
+        # exactly one zero, unweighted: gradient is n at the zero entry
+        (np.array([0.0, 2.0, 4.0]), None, np.array([3.0, 0.0, 0.0])),
+        # exactly one zero, weighted: gradient is sum(w) / w_k at the zero entry
+        (
+            np.array([0.0, 2.0, 4.0]),
+            np.array([1.0, 2.0, 3.0]),
+            np.array([6.0, 0.0, 0.0]),
+        ),
+        (
+            np.array([2.0, 0.0, 4.0]),
+            np.array([1.0, 2.0, 3.0]),
+            np.array([0.0, 3.0, 0.0]),
+        ),
+        # several zeros: gradient is set to 0
+        (np.array([0.0, 0.0, 4.0]), None, np.zeros(3)),
+        (np.array([0.0, 0.0, 4.0]), np.array([1.0, 2.0, 3.0]), np.zeros(3)),
+    ),
+)
+def test_hmean_gradient_with_zero(values, weights, expected) -> None:
+    with np.errstate(all="raise"):
+        res = hmean_gradient(values, weights)
+    np.testing.assert_allclose(res, expected)
+
+
+@pytest.mark.parametrize(
+    "values, weights, expected",
+    (
+        # unweighted, one zero: infinite slope at the zero, null elsewhere
+        (np.array([0.0, 2.0, 4.0]), None, np.array([np.inf, 0.0, 0.0])),
+        # weighted, one zero carrying only part of the weight
+        (
+            np.array([2.0, 4.0, 0.0]),
+            np.array([1.0, 1.0, 2.0]),
+            np.array([0.0, 0.0, np.inf]),
+        ),
+        # the zero entry carries the whole weight: gradient is 1
+        (
+            np.array([0.0, 2.0, 4.0]),
+            np.array([1.0, 0.0, 0.0]),
+            np.array([1.0, 0.0, 0.0]),
+        ),
+        # single value
+        (np.array([0.0]), None, np.array([1.0])),
+    ),
+)
+def test_gmean_gradient_with_zero(values, weights, expected) -> None:
+    with np.errstate(all="raise"):
+        res = gmean_gradient(values, weights)
+    np.testing.assert_array_equal(res, expected)
 
 
 @pytest.mark.parametrize(

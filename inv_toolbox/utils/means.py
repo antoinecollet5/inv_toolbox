@@ -58,19 +58,31 @@ def harmonic_mean(xi: NDArrayFloat, xj: NDArrayFloat) -> NDArrayFloat:
     """
     Return the harmonic mean of xi and xj.
 
+    Computed as ``2 * xi * xj / (xi + xj)`` so that zeros are handled
+    without any division by zero: if `xi` or `xj` is zero, the result is 0
+    (the limit of the harmonic mean for non-negative values).
+
     Parameters
     ----------
     xi : NDArrayFloat
-        First array of values. Must be non-zero.
+        First array of values.
     xj : NDArrayFloat
-        Second array of values. Must be non-zero.
+        Second array of values.
 
     Returns
     -------
     NDArrayFloat
-        The harmonic mean of `xi` and `xj`.
+        The harmonic mean of `xi` and `xj`. Entries where ``xi + xj == 0``
+        are 0 if both values are zero, NaN otherwise (opposite-sign values,
+        for which the mean is undefined).
     """
-    return 2.0 / (1.0 / xi + 1.0 / xj)
+    xi, xj = np.broadcast_arrays(
+        np.asarray(xi, dtype=float), np.asarray(xj, dtype=float)
+    )
+    den = xi + xj
+    out = np.full(den.shape, np.nan)
+    np.divide(2.0 * xi * xj, den, out=out, where=den != 0.0)
+    return np.where((xi == 0.0) & (xj == 0.0), 0.0, out)
 
 
 def dxi_harmonic_mean(xi: NDArrayFloat, xj: NDArrayFloat) -> NDArrayFloat:
@@ -80,16 +92,25 @@ def dxi_harmonic_mean(xi: NDArrayFloat, xj: NDArrayFloat) -> NDArrayFloat:
     Parameters
     ----------
     xi : NDArrayFloat
-        First array of values. Must be non-zero.
+        First array of values.
     xj : NDArrayFloat
-        Second array of values. Must be non-zero.
+        Second array of values.
 
     Returns
     -------
     NDArrayFloat
-        The derivative of :func:`harmonic_mean` w.r.t. `xi`.
+        The derivative of :func:`harmonic_mean` w.r.t. `xi`. Where both
+        values are zero the derivative is direction-dependent; the symmetric
+        value 0.5 is returned by convention. Where ``xi + xj == 0`` with
+        non-zero values, the derivative is undefined and NaN is returned.
     """
-    return 2.0 * xj**2.0 / (xi + xj) ** 2.0
+    xi, xj = np.broadcast_arrays(
+        np.asarray(xi, dtype=float), np.asarray(xj, dtype=float)
+    )
+    den = (xi + xj) ** 2.0
+    out = np.full(den.shape, np.nan)
+    np.divide(2.0 * xj**2.0, den, out=out, where=den != 0.0)
+    return np.where((xi == 0.0) & (xj == 0.0), 0.5, out)
 
 
 class MeanType(StrEnum):
@@ -110,6 +131,10 @@ def _reduce_1d(
     signature, which a dict-based dispatch would otherwise expose to
     `apply_along_axis` as an unmatchable union of callables).
 
+    Harmonic and geometric means of non-negative values containing a zero are
+    0 (the limit), returned explicitly to avoid division by zero / log(0)
+    warnings.
+
     Parameters
     ----------
     values_1d : NDArrayFloat
@@ -126,6 +151,8 @@ def _reduce_1d(
     """
     if mean_type == MeanType.ARITHMETIC:
         return float(np.average(values_1d, weights=weights))
+    if np.any(values_1d == 0.0):
+        return 0.0
     if mean_type == MeanType.GEOMETRIC:
         return float(gmean(values_1d, weights=weights))
     return float(hmean(values_1d, weights=weights))
@@ -202,10 +229,18 @@ def hmean_gradient(
     """
     Return the gradient of the (optionally weighted) harmonic mean.
 
+    Zeros are handled through the limit of the (non-negative) harmonic mean:
+
+    - no zero: the usual closed-form gradient;
+    - exactly one zero at index k: the gradient is ``n`` (``sum(w) / w_k``
+      if weighted) at k and 0 elsewhere;
+    - several zeros: the mean is identically 0 in a neighbourhood along the
+      non-zero entries and the gradient is set to 0.
+
     Parameters
     ----------
     values : NDArrayFloat
-        Values the harmonic mean is computed from. Must be non-zero.
+        Values the harmonic mean is computed from.
     weights : Optional[NDArrayFloat]
         Weights associated with `values`. If None, all values are equally
         weighted. The default is None.
@@ -216,6 +251,17 @@ def hmean_gradient(
         Gradient of the harmonic mean with respect to each entry of
         `values`, with the same shape as `values`.
     """
+    zeros = values == 0.0
+    n_zeros = int(np.count_nonzero(zeros))
+    if n_zeros > 0:
+        grad = np.zeros(values.shape, dtype=float)
+        if n_zeros == 1:
+            if weights is None:
+                grad[zeros] = values.size
+            else:
+                grad[zeros] = np.sum(weights) / weights[zeros]
+        return grad
+
     if weights is None:
         return values.size / (np.square(values * np.sum(1.0 / values)))
 
@@ -228,12 +274,15 @@ def gmean_gradient(
     """
     Return the gradient of the (optionally weighted) geometric mean.
 
+    If `values` contains zeros, the geometric mean is 0 and its gradient is
+    0 for the non-zero entries. For the zero entries the gradient is infinite
+    (the mean behaves like a power of exponent < 1), except when that entry
+    carries the whole weight (e.g. a single value), where it is 1.
+
     Parameters
     ----------
     values : NDArrayFloat
-        Values the geometric mean is computed from. Must be non-negative
-        (and non-zero in the unweighted case, to avoid a zero gradient
-        divided by zero).
+        Values the geometric mean is computed from. Must be non-negative.
     weights : Optional[NDArrayFloat]
         Weights associated with `values`. If None, all values are equally
         weighted. The default is None.
@@ -245,6 +294,17 @@ def gmean_gradient(
         `values`, with the same shape as `values`.
     """
     k: int = values.size
+    zeros = values == 0.0
+    if np.any(zeros):
+        share = (
+            np.full(values.shape, 1.0 / k)
+            if weights is None
+            else weights / np.sum(weights)
+        )
+        grad = np.zeros(values.shape, dtype=float)
+        grad[zeros] = np.where(share[zeros] >= 1.0, 1.0, np.inf)
+        return grad
+
     if weights is None:
         return 1 / k * np.power(np.prod(values), (1 / k)) / values
     return weights / (values * np.sum(weights)) * gmean(values, weights=weights)
