@@ -4,60 +4,12 @@
 """
 inv_toolbox submodule providing tools and utilities for other submodules.
 
-.. currentmodule:: inv_toolbox.utils.dataclass
-
-Working with dataclasses
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Utilities for python dataclasses.
-
-.. autosummary::
-   :toctree: _autosummary
-
-    default_field
-
-
-.. currentmodule:: inv_toolbox.utils.grid
-
-Regular grids
-^^^^^^^^^^^^^
-
-Provide utilities to work with regular grids.
-
-.. autosummary::
-   :toctree: _autosummary
-
-    indices_to_node_number
-    node_number_to_indices
-    span_to_node_numbers_2d
-    span_to_node_numbers_3d
-    get_array_borders_selection_2d
-    get_array_borders_selection_3d
-    get_a_not_in_b_1d
-    get_pts_coords_regular_grid
-    create_selections_array_2d
-    get_polygon_selection_with_dilation_2d
-    get_extended_grid_shape
-
-
-.. currentmodule:: inv_toolbox.utils.wellfield
-
-WellField
-^^^^^^^^^
-
-Utilities to create wellfields.
-
-.. autosummary::
-   :toctree: _autosummary
-
-    gen_wells_coordinates
-
 .. currentmodule:: inv_toolbox.utils.enum
 
-Working string enums
-^^^^^^^^^^^^^^^^^^^^
+Working with string enums
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Provide a str enum class.u
+Provide a str enum class.
 
 .. autosummary::
    :toctree: _autosummary
@@ -76,7 +28,6 @@ finite difference numerical approximation.
 .. autosummary::
    :toctree: _autosummary
 
-
     finite_jacobian
     finite_gradient
     is_all_close
@@ -88,19 +39,23 @@ finite difference numerical approximation.
 
 Spatial differential operators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Provide functions for spatial differentiation.
 
 .. autosummary::
    :toctree: _autosummary
 
-   gradient_ffd
-   gradient_bfd
-   hessian_cfd
+    gradient_ffd
+    gradient_bfd
+    hessian_cfd
+    get_angle_btw_vectors_deg
+    get_angle_btw_vectors_rad
 
 .. currentmodule:: inv_toolbox.utils.means
 
 Mean operators
 ^^^^^^^^^^^^^^
+
 Provide functions to perform mean and their first derivative.
 
 .. autosummary::
@@ -121,7 +76,8 @@ Provide functions to perform mean and their first derivative.
 
 Filters
 ^^^^^^^
-Provide some spatial filters
+
+Provide some spatial filters.
 
 .. autosummary::
    :toctree: _autosummary
@@ -139,13 +95,15 @@ Other functions
 .. autosummary::
    :toctree: _autosummary
 
+    Callback
     object_or_object_sequence_to_list
     get_super_ilu_preconditioner
     check_random_state
 
 Types
 ^^^^^
-Other functions
+
+Type aliases.
 
 .. autosummary::
    :toctree: _autosummary
@@ -201,6 +159,28 @@ from inv_toolbox.utils.operators import (
     gradient_ffd,
     hessian_cfd,
 )
+from inv_toolbox.utils.preconditioner import (
+    GDPCS,
+    GDPNCS,
+    BoundsClipper,
+    BoundsRescaler,
+    ChainedTransforms,
+    GradientScalerConfig,
+    InvAbsTransform,
+    LinearTransform,
+    LogTransform,
+    Normalizer,
+    NoTransform,
+    Preconditioner,
+    RangeRescaler,
+    SigmoidRescaler,
+    SigmoidRescalerBounded,
+    Slicer,
+    SqrtTransform,
+    StdRescaler,
+    SubSelector,
+    Uniform2Gaussian,
+)
 from inv_toolbox.utils.spatial_filters import Filter, GaussianFilter
 from inv_toolbox.utils.types import (
     ArrayLike,
@@ -212,38 +192,47 @@ from inv_toolbox.utils.types import (
 )
 
 __all__ = [
+    "ArrayLike",
+    "BoundsClipper",
+    "BoundsRescaler",
     "Callback",
+    "ChainedTransforms",
     "Filter",
+    "GDPCS",
+    "GDPNCS",
     "GaussianFilter",
+    "GradientScalerConfig",
     "Int",
+    "InvAbsTransform",
+    "LinearTransform",
+    "LogTransform",
     "MeanType",
     "NDArrayBool",
     "NDArrayFloat",
     "NDArrayInt",
-    "ArrayLike",
+    "NoTransform",
+    "Normalizer",
+    "Preconditioner",
+    "RangeRescaler",
+    "SigmoidRescaler",
+    "SigmoidRescalerBounded",
+    "Slicer",
+    "SqrtTransform",
+    "StdRescaler",
     "StrEnum",
+    "SubSelector",
+    "Uniform2Gaussian",
     "amean_gradient",
     "arithmetic_mean",
     "check_random_state",
-    "create_selections_array_2d",
-    "default_field",
     "dxi_arithmetic_mean",
     "dxi_harmonic_mean",
     "finite_gradient",
     "finite_jacobian",
-    "gen_random_ensemble",
-    "get_a_not_in_b_1d",
     "get_angle_btw_vectors_deg",
     "get_angle_btw_vectors_rad",
-    "get_array_borders_selection_2d",
-    "get_array_borders_selection_3d",
-    "get_extended_grid_shape",
     "get_mean_values_for_last_axis",
     "get_mean_values_gradient_for_last_axis",
-    "get_normalized_mean_from_lognormal_params",
-    "get_normalized_std_from_lognormal_params",
-    "get_polygon_selection_with_dilation_2d",
-    "get_pts_coords_regular_grid",
     "get_super_ilu_preconditioner",
     "gmean_gradient",
     "gradient_bfd",
@@ -251,12 +240,8 @@ __all__ = [
     "harmonic_mean",
     "hessian_cfd",
     "hmean_gradient",
-    "indices_to_node_number",
     "is_all_close",
     "is_gradient_correct",
     "is_jacobian_correct",
-    "node_number_to_indices",
     "object_or_object_sequence_to_list",
-    "span_to_node_numbers_2d",
-    "span_to_node_numbers_3d",
 ]

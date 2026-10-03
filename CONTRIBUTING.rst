@@ -65,21 +65,25 @@ Each pull request should be self-contained and address a single issue or feature
 Before submitting a pull request, please ensure that:
 
 1. **Tests**
+
    - New code is fully tested.
    - Run the test suite with coverage to identify gaps.
 
 2. **Documentation**
+
    - Relevant documentation is updated.
    - Docstrings follow the NumPy docstring format.
    - Tutorials and user documentation are updated when necessary.
 
 3. **Continuous Integration**
+
    - All CI checks pass.
-   - All pre-commit hoocks succeed.
+   - All pre-commit hooks succeed.
    - Code coverage does not decrease.
    - Documentation builds successfully.
 
 4. **Clarity**
+
    - The pull request clearly describes the changes made.
    - The description explains how the changes address the issue.
    - Screenshots or examples are encouraged when they improve clarity.
@@ -89,12 +93,12 @@ After approval, a maintainer will merge it.
 
 Thank you very much for your contribution and for helping improve inv_toolbox!
 
-Setting Up inv_toolbox for Local Development
------------------------------------------
+Setting Up for Local Development
+--------------------------------
 
-Ready to contribute? Here’s how to set up `inv_toolbox` for local development.
+Ready to contribute? Here’s how to set up ``inv_toolbox`` for local development.
 
-1. Fork the `inv_toolbox` repository on GitHub.
+1. Fork the ``inv_toolbox`` repository on GitHub.
 
 2. Clone your fork locally::
 
@@ -105,15 +109,16 @@ Ready to contribute? Here’s how to set up `inv_toolbox` for local development.
 
     $ python -m venv venv
     $ source venv/bin/activate  # On Windows: venv\Scripts\activate
-    $ pip install -e .[all]
+    $ pip install -e ".[all]"
 
-4. Create a new branch for your work::
+4. Create a new branch from **develop** for your work::
 
+    $ git checkout develop
     $ git checkout -b name-of-your-bugfix-or-feature
 
 5. Make your changes locally.
 
-6. Run linting, tests, and coverage checks against all supported python versions::
+6. Run linting, tests, and coverage checks against all supported Python versions::
 
     $ pre-commit run --all-files
     $ make coverage
@@ -133,3 +138,8 @@ Ready to contribute? Here’s how to set up `inv_toolbox` for local development.
     $ git add .
     $ git commit -m "Clear and descriptive commit message"
     $ git push origin name-of-your-bugfix-or-feature
+
+8. Open a pull request against the **develop** branch on GitHub, following the
+   `Pull Request Guidelines`_ above.
+
+Documentation is available at https://inv-toolbox.readthedocs.io.

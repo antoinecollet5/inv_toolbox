@@ -9,3 +9,10 @@ API Reference
 .. raw:: latex
 
     \clearpage
+
+.. toctree::
+   :hidden:
+
+   utils.rst
+   regularization.rst
+   plot.rst

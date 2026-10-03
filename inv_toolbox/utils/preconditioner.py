@@ -109,13 +109,13 @@ import numpy as np
 import quickpaver
 import scipy as sp
 from numpy.typing import ArrayLike
+from scipy._lib._util import check_random_state  # To handle random_state
 from scipy.sparse.linalg import LinearOperator
 
-from inv_toolbox.utils import (
+from inv_toolbox.utils.types import (
     NDArrayBool,
     NDArrayFloat,
     NDArrayInt,
-    check_random_state,
     object_or_object_sequence_to_list,
 )
 

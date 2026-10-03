@@ -132,7 +132,7 @@ class TestConstantRegWeight:
 class TestRegularizator:
     def test_cannot_instantiate_abstract_class(self) -> None:
         with pytest.raises(TypeError):
-            Regularizator()  # type: ignore[abstract]
+            Regularizator()  # ty: ignore[call-non-callable]
 
     def test_eval_loss_1d(self) -> None:
         reg = _DummyRegularizator()
